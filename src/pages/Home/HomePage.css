@@ -1,0 +1,13 @@
+.container {
+    width: 100%;
+    max-width: 100vw; /* Limita a largura máxima ao tamanho da viewport */
+    overflow: hidden; /* Evita rolagem indesejada */
+  }
+  
+  .responsive-image {
+    width: 100%;
+    max-width: 100%; /* Garante que a imagem não ultrapasse o contêiner */
+    height: auto;
+    max-height: 100vh; /* Limita a altura da imagem à altura da viewport */
+  }
+
