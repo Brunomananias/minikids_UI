@@ -1,55 +1,47 @@
-import React, { useState, ChangeEvent, FormEvent } from 'react';
+import React, { useState, ChangeEvent, FormEvent, useEffect } from 'react';
 import Calendar from 'react-calendar'; // Importe a biblioteca de calendário
 import 'react-calendar/dist/Calendar.css'; // Importe os estilos padrão
 import { AppBar, Toolbar, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TextField, Button, Select, MenuItem, InputLabel, FormControl } from '@mui/material';
+import axios from 'axios';
 
+const apiClient = axios.create({
+  baseURL: 'http://localhost:5250', // URL do backend
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
 // Define o tipo para o estado do formulário
 interface FormData {
-  eventDate: Date | null;
-  package: string;
-  partyDuration: string;
-  partyAddress: string;
-  code: string;
-  firstName: string;
-  lastName: string;
-  phone: string;
-  email: string;
-  mobile: string;
-  address: string;
+  data: string;
+  pacote: string;
+  tempoDeFesta: string;
+  endereco: string;
+  clienteId: string;
+  observacoes: string;
 }
 
-// Define o tipo para os eventos na tabela
-interface Event {
-  eventDate: Date | null;
-  package: string;
-  partyDuration: string;
-  partyAddress: string;
-  code: string;
-  firstName: string;
-  lastName: string;
-  phone: string;
-  email: string;
-  mobile: string;
-  address: string;
+interface Evento {
+  data: string;
+  pacote: string;
+  tempoDeFesta: string;
+  endereco: string;
+  clienteId: string;
+  observacoes: string;
 }
 
 const EventFormWithTable: React.FC = () => {
   const [formData, setFormData] = useState<FormData>({
-    eventDate: null,
-    package: '',
-    partyDuration: '',
-    partyAddress: '',
-    code: '',
-    firstName: '',
-    lastName: '',
-    phone: '',
-    email: '',
-    mobile: '',
-    address: ''
+    data: '',
+    pacote: '',
+    tempoDeFesta: '',
+    endereco: '',
+    clienteId: '',
+    observacoes: ''
   });
 
-  const [events, setEvents] = useState<Event[]>([]);
-
+  const [events, setEvents] = useState<Evento[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
   // Função para lidar com mudanças no formulário
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -74,20 +66,46 @@ const EventFormWithTable: React.FC = () => {
     setEvents(prevEvents => [...prevEvents, formData]);
     // Limpa o formulário
     setFormData({
-      eventDate: null,
-      package: '',
-      partyDuration: '',
-      partyAddress: '',
-      code: '',
-      firstName: '',
-      lastName: '',
-      phone: '',
-      email: '',
-      mobile: '',
-      address: ''
+      data: '',
+      pacote: '',
+      tempoDeFesta: '',
+      endereco: '',
+      clienteId: '',
+      observacoes: ''
     });
   };
 
+  useEffect(() => {
+    const fetchEventos = async () => {
+      try {
+        const response = await apiClient.get<Evento[]>('/api/Eventos');
+
+        // Formatar as datas
+        const formattedEvents = response.data.map((event) => {
+          // Converter a string ISO para um objeto Date
+          const date = new Date(event.data);
+          // Verificar se a data é válida
+          const formattedDate = isNaN(date.getTime()) ? 'Data inválida' : date.toLocaleDateString('pt-BR');
+
+          return {
+            ...event,
+            formattedDate
+          };
+        });
+        setEvents(formattedEvents);
+      } catch (err) {
+        setError('Erro ao carregar dados');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEventos();
+  }, []);
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>{error}</p>;
+ 
   return (
     <>
       <AppBar position="static">
@@ -114,7 +132,7 @@ const EventFormWithTable: React.FC = () => {
             <div style={{ marginBottom: '15px' }}>
               <label>
                 Pacote Escolhido:
-                <select name="package" value={formData.package} onChange={handleChange}>
+                <select name="package" value={formData.pacote} onChange={handleChange}>
                   <option value="">Selecione um pacote</option>
                   <option value="basic">Básico</option>
                   <option value="premium">Premium</option>
@@ -129,7 +147,7 @@ const EventFormWithTable: React.FC = () => {
                 <input
                   type="text"
                   name="partyDuration"
-                  value={formData.partyDuration}
+                  value={formData.tempoDeFesta}
                   onChange={handleChange}
                   placeholder="Duração da festa"
                 />
@@ -142,7 +160,7 @@ const EventFormWithTable: React.FC = () => {
                 <input
                   type="text"
                   name="partyAddress"
-                  value={formData.partyAddress}
+                  value={formData.endereco}
                   onChange={handleChange}
                   placeholder="Endereço da festa"
                 />
@@ -155,7 +173,7 @@ const EventFormWithTable: React.FC = () => {
                 <input
                   type="text"
                   name="observacao"
-                  value={formData.partyDuration}
+                  value={formData.observacoes}
                   onChange={handleChange}
                   placeholder="Observações"
                 />
@@ -170,20 +188,20 @@ const EventFormWithTable: React.FC = () => {
                 <input
                   type="text"
                   name="code"
-                  value={formData.code}
+                  value={formData.clienteId}
                   onChange={handleChange}
                   placeholder="Código"
                 />
               </label>
             </div>
 
-            <div style={{ marginBottom: '15px' }}>
+            {/* <div style={{ marginBottom: '15px' }}>
               <label>
                 Nome:
                 <input
                   type="text"
                   name="firstName"
-                  value={formData.firstName}
+                  value={formData.nome}
                   onChange={handleChange}
                   placeholder="Nome"
                 />
@@ -201,7 +219,7 @@ const EventFormWithTable: React.FC = () => {
                   placeholder="Sobrenome"
                 />
               </label>
-            </div>
+            </div> */}
 
             <button type="submit">Enviar</button>
           </form>
@@ -224,10 +242,10 @@ const EventFormWithTable: React.FC = () => {
                 {events.length > 0 ? (
                   events.map((event, index) => (
                     <TableRow key={index}>
-                      <TableCell>{event.eventDate ? event.eventDate.toDateString() : ''}</TableCell>
-                      <TableCell>{event.package}</TableCell>
-                      <TableCell>{event.partyDuration}</TableCell>
-                      <TableCell>{event.partyAddress}</TableCell>
+                      <TableCell>{event.data ? event.data : ''}</TableCell>
+                      <TableCell>{event.pacote}</TableCell>
+                      <TableCell>{event.tempoDeFesta}</TableCell>
+                      <TableCell>{event.endereco}</TableCell>
                     </TableRow>
                   ))
                 ) : (
