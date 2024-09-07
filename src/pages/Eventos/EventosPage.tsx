@@ -1,8 +1,12 @@
 import React, { useState, ChangeEvent, FormEvent, useEffect } from 'react';
 import Calendar from 'react-calendar'; // Importe a biblioteca de calendário
 import 'react-calendar/dist/Calendar.css'; // Importe os estilos padrão
-import { AppBar, Toolbar, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TextField, Button, Select, MenuItem, InputLabel, FormControl } from '@mui/material';
+import { AppBar, Toolbar, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TextField, Button, Select, MenuItem, InputLabel, FormControl, FilledTextFieldProps, OutlinedTextFieldProps, StandardTextFieldProps, TextFieldVariants, Box } from '@mui/material';
 import axios from 'axios';
+import Swal from 'sweetalert2';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
 const apiClient = axios.create({
   baseURL: 'http://localhost:5250', // URL do backend
@@ -20,13 +24,26 @@ interface FormData {
   observacoes: string;
 }
 
+interface Cliente {
+  id: number;
+  nome: string;
+  sobrenome: string;
+}
+
 interface Evento {
-  data: string;
+  id: number;
+  data: string; // ou Date, dependendo de como você trata isso
   pacote: string;
   tempoDeFesta: string;
   endereco: string;
-  clienteId: string;
-  observacoes: string;
+  clienteId: number; // Deve ser um número
+  observacoes?: string;
+  formattedDate?: string; // Adicionado para a data formatada
+  cliente?: Cliente; // Adicionado para associar o cliente
+}
+
+interface EventoComCliente extends Evento {
+  cliente?: Cliente; // Aqui 'cliente' é opcional, pois pode não existir para todos os eventos
 }
 
 const EventFormWithTable: React.FC = () => {
@@ -36,76 +53,152 @@ const EventFormWithTable: React.FC = () => {
     tempoDeFesta: '',
     endereco: '',
     clienteId: '',
-    observacoes: ''
+    observacoes: '',
   });
-
-  const [events, setEvents] = useState<Evento[]>([]);
+  
+  const [clients, setClients] = useState<Cliente[]>([]);
+  const [events, setEvents] = useState<EventoComCliente[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedDate, setSelectedDate] = React.useState<Date | null>(null);
+  const [dataEvento, setDataEvento] = useState('');
   // Função para lidar com mudanças no formulário
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
+    // Atualiza o estado para o campo específico
     setFormData(prevState => ({
       ...prevState,
       [name]: value
     }));
   };
 
-  // Função para lidar com mudanças na data do evento
-  const handleDateChange = (newValue: Date | Date[] | null): void => {
-    setFormData(prevState => ({
-      ...prevState,
-      eventDate: Array.isArray(newValue) ? (newValue[0] ?? null) : (newValue ?? null)
-    }));
-  };
+  const alteracaoDataEvento = (value: number) => {
 
-  // Função para lidar com o envio do formulário
+  }
+
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
+  
+    // Verifique se `formData` possui todos os campos necessários
+    const newEvent: Evento = {
+      ...formData,
+      id: 0,
+      clienteId: 0,
+    };
+  
     // Adiciona o evento ao estado de eventos
-    setEvents(prevEvents => [...prevEvents, formData]);
+    setEvents(prevEvents => [...prevEvents, newEvent]);
+  
     // Limpa o formulário
     setFormData({
       data: '',
       pacote: '',
       tempoDeFesta: '',
       endereco: '',
-      clienteId: '',
+      clienteId: '', // Garantir que seja um número, ou ajustar conforme necessário
       observacoes: ''
     });
   };
+  const cadastrarEvento = async () => {
+    try {
+      const response = await apiClient.post('api/Eventos', {
+        data: selectedDate,
+        pacote: formData.pacote,
+        tempoDeFesta: formData.tempoDeFesta,
+        endereco: formData.endereco,
+        observacoes: formData.observacoes,
+        clienteId: formData.clienteId
+      }, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+  
+      console.log('Evento criado com sucesso:', response.data);
+  
+      setEvents([...events, response.data]);
+      Swal.fire({
+        position: "center",
+        icon: "success",
+        title: "Evento cadastrado com sucesso!",
+        showConfirmButton: false,
+        timer: 1500
+      });
+    } catch (error) {
+      console.error('Erro ao cadastrar evento:', error);
+    }
+  }
+
+  // useEffect(() => {
+  //   const fetchEventos = async () => {
+  //     try {
+  //       const response = await apiClient.get<Evento[]>('/api/Eventos');
+  //       // Formatar as datas
+  //       const formattedEvents = response.data.map((event) => {
+  //         // Converter a string ISO para um objeto Date
+  //         const date = new Date(event.data);
+  //         // Verificar se a data é válida
+  //         const formattedDate = isNaN(date.getTime()) ? 'Data inválida' : date.toLocaleDateString('pt-BR');
+
+  //         return {
+  //           ...event,
+  //           formattedDate
+  //         };
+  //       });
+  //       setEvents(formattedEvents);
+  //     } catch (err) {
+  //       setError('Erro ao carregar dados');
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+
+  //   fetchEventos();
+  // }, []);
 
   useEffect(() => {
     const fetchEventos = async () => {
       try {
-        const response = await apiClient.get<Evento[]>('/api/Eventos');
-
-        // Formatar as datas
-        const formattedEvents = response.data.map((event) => {
-          // Converter a string ISO para um objeto Date
+        const [eventResponse, clientResponse] = await Promise.all([
+          apiClient.get<Evento[]>('/api/Eventos'),
+          apiClient.get<Cliente[]>('/api/Clientes')
+        ]);
+  
+        // Formatar eventos
+        const formattedEvents = eventResponse.data.map((event) => {
           const date = new Date(event.data);
-          // Verificar se a data é válida
           const formattedDate = isNaN(date.getTime()) ? 'Data inválida' : date.toLocaleDateString('pt-BR');
-
+  
           return {
             ...event,
             formattedDate
           };
         });
-        setEvents(formattedEvents);
+  
+        // Mapear clientes por ID para acesso rápido
+        const clientMap = new Map<number, Cliente>(clientResponse.data.map(client => [client.id, client]));
+  
+        // Associar clientes aos eventos
+        const eventsWithClients: EventoComCliente[] = formattedEvents.map(event => ({
+          ...event,
+          cliente: clientMap.get(event.clienteId) || undefined // Usar undefined para garantir que seja compatível com Cliente | undefined
+        }));
+  
+        setEvents(eventsWithClients);
       } catch (err) {
         setError('Erro ao carregar dados');
       } finally {
         setLoading(false);
       }
     };
-
+  
     fetchEventos();
   }, []);
+  
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>{error}</p>;
- 
+
   return (
     <>
       <AppBar position="static">
@@ -120,23 +213,32 @@ const EventFormWithTable: React.FC = () => {
           <form onSubmit={handleSubmit}>
             <div style={{ marginBottom: '15px' }}>
               <label>
-                Data do Evento:
-                <Calendar
-                //   onChange={handleDateChange}
-                //   value={formData.eventDate}
-                //   style={{ maxWidth: '300px', margin: '10px 0' }}
-                />
+                <LocalizationProvider dateAdapter={AdapterDateFns}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', maxWidth: 300, margin: 'auto' }}>
+                    <DatePicker
+                      label="Selecionar data do evento"
+                      value={selectedDate}
+                      onChange={(newValue) => setSelectedDate(newValue)}
+                    // No renderInput needed if this works directly
+                    />
+                    {/* selectedDate.toISOString().split('T')[0] */}
+                  </Box>
+                </LocalizationProvider>
               </label>
             </div>
 
             <div style={{ marginBottom: '15px' }}>
               <label>
                 Pacote Escolhido:
-                <select name="package" value={formData.pacote} onChange={handleChange}>
+                <select name="pacote" value={formData.pacote} onChange={handleChange}>
                   <option value="">Selecione um pacote</option>
-                  <option value="basic">Básico</option>
-                  <option value="premium">Premium</option>
-                  <option value="luxury">Luxo</option>
+                  <option value="nuvem">Nuvem</option>
+                  <option value="sol">Sol</option>
+                  <option value="lua">Lua</option>
+                  <option value="Cometa">Cometa</option>
+                  <option value="Estrela">Estrela</option>
+                  <option value="Arco-Iris">Arco-Iris</option>
+                  <option value="Planetario">Planetario</option>
                 </select>
               </label>
             </div>
@@ -146,7 +248,7 @@ const EventFormWithTable: React.FC = () => {
                 Tempo de Festa (em horas):
                 <input
                   type="text"
-                  name="partyDuration"
+                  name="tempoDeFesta"
                   value={formData.tempoDeFesta}
                   onChange={handleChange}
                   placeholder="Duração da festa"
@@ -159,7 +261,7 @@ const EventFormWithTable: React.FC = () => {
                 Endereço da Festa:
                 <input
                   type="text"
-                  name="partyAddress"
+                  name="endereco"
                   value={formData.endereco}
                   onChange={handleChange}
                   placeholder="Endereço da festa"
@@ -172,7 +274,7 @@ const EventFormWithTable: React.FC = () => {
                 Observações:
                 <input
                   type="text"
-                  name="observacao"
+                  name="observacoes"
                   value={formData.observacoes}
                   onChange={handleChange}
                   placeholder="Observações"
@@ -187,7 +289,7 @@ const EventFormWithTable: React.FC = () => {
                 Código:
                 <input
                   type="text"
-                  name="code"
+                  name="clienteId"
                   value={formData.clienteId}
                   onChange={handleChange}
                   placeholder="Código"
@@ -221,41 +323,48 @@ const EventFormWithTable: React.FC = () => {
               </label>
             </div> */}
 
-            <button type="submit">Enviar</button>
+            <button type="submit" onClick={cadastrarEvento}>Enviar</button>
           </form>
         </div>
 
         <div style={{ flex: 1 }}>
           <h2>Eventos Cadastrados</h2>
           <TableContainer component={Paper} style={{ marginTop: '20px' }}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Data</TableCell>
-                  <TableCell>Pacote</TableCell>
-                  <TableCell>Duração</TableCell>
-                  <TableCell>Endereço</TableCell>
-                  <TableCell>Observações</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {events.length > 0 ? (
-                  events.map((event, index) => (
-                    <TableRow key={index}>
-                      <TableCell>{event.data ? event.data : ''}</TableCell>
-                      <TableCell>{event.pacote}</TableCell>
-                      <TableCell>{event.tempoDeFesta}</TableCell>
-                      <TableCell>{event.endereco}</TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={7} style={{ textAlign: 'center' }}>Nenhum evento cadastrado</TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
+      <Table>
+        <TableHead>
+          <TableRow>
+            <TableCell>Data</TableCell>
+            <TableCell>Pacote</TableCell>
+            <TableCell>Duração</TableCell>
+            <TableCell>Endereço</TableCell>
+            <TableCell>Observações</TableCell>
+            <TableCell>Cliente Nome</TableCell>
+            <TableCell>Cliente Sobrenome</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {events.length > 0 ? (
+            events.map((event) => (
+              <TableRow key={event.id}>
+                <TableCell>{new Date(event.data).toLocaleDateString('pt-BR')}</TableCell>
+                <TableCell>{event.pacote}</TableCell>
+                <TableCell>{event.tempoDeFesta}</TableCell>
+                <TableCell>{event.endereco}</TableCell>
+                <TableCell>{event.observacoes || 'N/A'}</TableCell>
+                <TableCell>{event.cliente ? event.cliente.nome : 'N/A'}</TableCell>
+                <TableCell>{event.cliente ? event.cliente.sobrenome : 'N/A'}</TableCell>
+              </TableRow>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell colSpan={7} style={{ textAlign: 'center' }}>
+                Nenhum evento cadastrado
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
+    </TableContainer>
         </div>
       </div>
     </>
