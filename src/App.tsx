@@ -5,6 +5,7 @@ import HomePage from './pages/Home/HomePage';
 import ClientesPage from './pages/ClientesPage';
 import EventosPage from './pages/Eventos/EventosPage';
 import FinanceiroPage from './pages/FinanceiroPage';
+import ContratosPage from './pages/Contratos/ContratosPage';
 
 const drawerWidth = 240;
 
@@ -37,6 +38,9 @@ function App() {
             </ListItem>
             <ListItem button component={Link} to="/financeiro">
               <ListItemText primary="Financeiro" />
+            </ListItem> 
+            <ListItem button component={Link} to="/contratos">
+              <ListItemText primary="Contratos" />
             </ListItem>
           </List>
           <Divider />
@@ -56,6 +60,7 @@ function App() {
             <Route path="/clientes" element={<ClientesPage />} />
             <Route path="/eventos" element={<EventosPage />} />
             <Route path="/financeiro" element={<FinanceiroPage />} />
+            <Route path="/contratos" element={<ContratosPage/>}/>
           </Routes>
         </Box>
       </Box>

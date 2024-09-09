@@ -7,6 +7,8 @@ import Swal from 'sweetalert2';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import ClientModal from '../../components/clienteModal';
+import { JSX } from 'react/jsx-runtime';
 
 const apiClient = axios.create({
   baseURL: 'http://localhost:5250', // URL do backend
@@ -20,7 +22,7 @@ interface FormData {
   pacote: string;
   tempoDeFesta: string;
   endereco: string;
-  clienteId: string;
+  clienteId: number;
   observacoes: string;
 }
 
@@ -52,11 +54,12 @@ const EventFormWithTable: React.FC = () => {
     pacote: '',
     tempoDeFesta: '',
     endereco: '',
-    clienteId: '',
+    clienteId: 0,
     observacoes: '',
   });
-  
-  const [clients, setClients] = useState<Cliente[]>([]);
+  const [selectedClient, setSelectedClient] = useState<{ id: number; nome: string } | null>(null);
+  const [abrirModalClientes, setAbrirModalClientes] = useState<boolean>(false);
+  const [clientes, setClientes] = useState<Cliente[]>([]);
   const [events, setEvents] = useState<EventoComCliente[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -69,40 +72,64 @@ const EventFormWithTable: React.FC = () => {
     setFormData(prevState => ({
       ...prevState,
       [name]: value
+
     }));
   };
 
-  const alteracaoDataEvento = (value: number) => {
-
-  }
-
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-  
+
     // Verifique se `formData` possui todos os campos necessários
     const newEvent: Evento = {
       ...formData,
       id: 0,
       clienteId: 0,
     };
-  
     // Adiciona o evento ao estado de eventos
     setEvents(prevEvents => [...prevEvents, newEvent]);
-  
     // Limpa o formulário
     setFormData({
       data: '',
       pacote: '',
       tempoDeFesta: '',
       endereco: '',
-      clienteId: '', // Garantir que seja um número, ou ajustar conforme necessário
+      clienteId: 0, // Garantir que seja um número, ou ajustar conforme necessário
       observacoes: ''
     });
   };
+
+  const handleClientSelect = (id: number, nome: string) => {
+    const clienteSelecionado = clientes.find(cliente => cliente.id === id);
+    
+    if (clienteSelecionado) {
+      setSelectedClient(clienteSelecionado);
+      
+      // Atualizar o estado do formulário com o cliente selecionado
+      setFormData(prevFormData => ({
+        ...prevFormData,
+        clienteId: clienteSelecionado.id // Atualiza o ID do cliente como número
+      }));
+    }
+    
+    setAbrirModalClientes(false); // Fechar o modal após a seleção
+  };
+
+  const formatDateForApi = (date: Date | null): string => {
+    if (!date) return '';
+
+    // Criar uma nova data ajustando o fuso horário para UTC
+    const utcDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+
+    // Formatar a data como ISO 8601 e ajustar o formato para a API
+    return utcDate.toISOString().replace('Z', '');  // Remove o 'Z' (indicador de UTC) se necessário
+  };
+
   const cadastrarEvento = async () => {
     try {
+      const formattedDate = formatDateForApi(selectedDate);
+      
       const response = await apiClient.post('api/Eventos', {
-        data: selectedDate,
+        data: formattedDate,
         pacote: formData.pacote,
         tempoDeFesta: formData.tempoDeFesta,
         endereco: formData.endereco,
@@ -112,11 +139,10 @@ const EventFormWithTable: React.FC = () => {
         headers: {
           'Content-Type': 'application/json'
         }
-      });
-  
-      console.log('Evento criado com sucesso:', response.data);
-  
+      })
+
       setEvents([...events, response.data]);
+      fetchEventos();
       Swal.fire({
         position: "center",
         icon: "success",
@@ -125,9 +151,66 @@ const EventFormWithTable: React.FC = () => {
         timer: 1500
       });
     } catch (error) {
-      console.error('Erro ao cadastrar evento:', error);
+      Swal.fire({
+        position: "center",
+        icon: "error",
+        title: "Erro ao cadastrar evento!",
+        showConfirmButton: false,
+        timer: 1500
+      });
     }
   }
+
+  const carregarClientes = async () => {
+    try {
+      const response = await apiClient.get('api/Clientes');
+      setClientes(response.data);
+      setAbrirModalClientes(true)
+    } catch {
+      Swal.fire({
+        position: "center",
+        icon: "error",
+        title: "Erro ao buscar clientes cadastrados!",
+        showConfirmButton: false,
+        timer: 1500
+      });
+    }
+  }
+
+  const fetchEventos = async () => {
+    try {
+      const [eventResponse, clientResponse] = await Promise.all([
+        apiClient.get<Evento[]>('/api/Eventos'),
+        apiClient.get<Cliente[]>('/api/Clientes')
+      ]);
+
+      // Formatar eventos
+      const formattedEvents = eventResponse.data.map((event) => {
+        const date = new Date(event.data);
+        const formattedDate = isNaN(date.getTime()) ? 'Data inválida' : date.toLocaleDateString('pt-BR');
+
+        return {
+          ...event,
+          formattedDate
+        };
+      });
+
+      // Mapear clientes por ID para acesso rápido
+      const clientMap = new Map<number, Cliente>(clientResponse.data.map(client => [client.id, client]));
+
+      // Associar clientes aos eventos
+      const eventsWithClients: EventoComCliente[] = formattedEvents.map(event => ({
+        ...event,
+        cliente: clientMap.get(event.clienteId) || undefined // Usar undefined para garantir que seja compatível com Cliente | undefined
+      }));
+
+      setEvents(eventsWithClients);
+    } catch (err) {
+      setError('Erro ao carregar dados');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // useEffect(() => {
   //   const fetchEventos = async () => {
@@ -157,44 +240,9 @@ const EventFormWithTable: React.FC = () => {
   // }, []);
 
   useEffect(() => {
-    const fetchEventos = async () => {
-      try {
-        const [eventResponse, clientResponse] = await Promise.all([
-          apiClient.get<Evento[]>('/api/Eventos'),
-          apiClient.get<Cliente[]>('/api/Clientes')
-        ]);
-  
-        // Formatar eventos
-        const formattedEvents = eventResponse.data.map((event) => {
-          const date = new Date(event.data);
-          const formattedDate = isNaN(date.getTime()) ? 'Data inválida' : date.toLocaleDateString('pt-BR');
-  
-          return {
-            ...event,
-            formattedDate
-          };
-        });
-  
-        // Mapear clientes por ID para acesso rápido
-        const clientMap = new Map<number, Cliente>(clientResponse.data.map(client => [client.id, client]));
-  
-        // Associar clientes aos eventos
-        const eventsWithClients: EventoComCliente[] = formattedEvents.map(event => ({
-          ...event,
-          cliente: clientMap.get(event.clienteId) || undefined // Usar undefined para garantir que seja compatível com Cliente | undefined
-        }));
-  
-        setEvents(eventsWithClients);
-      } catch (err) {
-        setError('Erro ao carregar dados');
-      } finally {
-        setLoading(false);
-      }
-    };
-  
     fetchEventos();
   }, []);
-  
+
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>{error}</p>;
@@ -219,9 +267,10 @@ const EventFormWithTable: React.FC = () => {
                       label="Selecionar data do evento"
                       value={selectedDate}
                       onChange={(newValue) => setSelectedDate(newValue)}
-                    // No renderInput needed if this works directly
                     />
-                    {/* selectedDate.toISOString().split('T')[0] */}
+                    {selectedDate && (
+                      <p>Data selecionada: {selectedDate.toISOString().split('T')[0]}</p>
+                    )}
                   </Box>
                 </LocalizationProvider>
               </label>
@@ -283,6 +332,18 @@ const EventFormWithTable: React.FC = () => {
             </div>
 
             <h3>Dados do Cliente</h3>
+            <div className="container mt-5">
+              <Button variant="text" onClick={carregarClientes}>
+                Buscar Clientes
+              </Button>
+
+              <ClientModal
+                show={abrirModalClientes}
+                onHide={() => setAbrirModalClientes(false)}
+                clientes={clientes}
+                onSelectClient={handleClientSelect}
+              />
+            </div>
 
             <div style={{ marginBottom: '15px' }}>
               <label>
@@ -290,38 +351,26 @@ const EventFormWithTable: React.FC = () => {
                 <input
                   type="text"
                   name="clienteId"
-                  value={formData.clienteId}
+                  value={selectedClient ? selectedClient.id : ''}
                   onChange={handleChange}
                   placeholder="Código"
                 />
               </label>
             </div>
 
-            {/* <div style={{ marginBottom: '15px' }}>
+            <div style={{ marginBottom: '15px' }}>
               <label>
                 Nome:
                 <input
                   type="text"
                   name="firstName"
-                  value={formData.nome}
+                  value={selectedClient ? selectedClient.nome : ''}
+                  disabled
                   onChange={handleChange}
                   placeholder="Nome"
                 />
               </label>
             </div>
-
-            <div style={{ marginBottom: '15px' }}>
-              <label>
-                Sobrenome:
-                <input
-                  type="text"
-                  name="lastName"
-                  value={formData.lastName}
-                  onChange={handleChange}
-                  placeholder="Sobrenome"
-                />
-              </label>
-            </div> */}
 
             <button type="submit" onClick={cadastrarEvento}>Enviar</button>
           </form>
@@ -330,41 +379,41 @@ const EventFormWithTable: React.FC = () => {
         <div style={{ flex: 1 }}>
           <h2>Eventos Cadastrados</h2>
           <TableContainer component={Paper} style={{ marginTop: '20px' }}>
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell>Data</TableCell>
-            <TableCell>Pacote</TableCell>
-            <TableCell>Duração</TableCell>
-            <TableCell>Endereço</TableCell>
-            <TableCell>Observações</TableCell>
-            <TableCell>Cliente Nome</TableCell>
-            <TableCell>Cliente Sobrenome</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {events.length > 0 ? (
-            events.map((event) => (
-              <TableRow key={event.id}>
-                <TableCell>{new Date(event.data).toLocaleDateString('pt-BR')}</TableCell>
-                <TableCell>{event.pacote}</TableCell>
-                <TableCell>{event.tempoDeFesta}</TableCell>
-                <TableCell>{event.endereco}</TableCell>
-                <TableCell>{event.observacoes || 'N/A'}</TableCell>
-                <TableCell>{event.cliente ? event.cliente.nome : 'N/A'}</TableCell>
-                <TableCell>{event.cliente ? event.cliente.sobrenome : 'N/A'}</TableCell>
-              </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell colSpan={7} style={{ textAlign: 'center' }}>
-                Nenhum evento cadastrado
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
-    </TableContainer>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Data</TableCell>
+                  <TableCell>Pacote</TableCell>
+                  <TableCell>Duração</TableCell>
+                  <TableCell>Endereço</TableCell>
+                  <TableCell>Observações</TableCell>
+                  <TableCell>Cliente Nome</TableCell>
+                  <TableCell>Cliente Sobrenome</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {events.length > 0 ? (
+                  events.map((event) => (
+                    <TableRow key={event.id}>
+                      <TableCell>{new Date(event.data).toLocaleDateString('pt-BR')}</TableCell>
+                      <TableCell>{event.pacote}</TableCell>
+                      <TableCell>{event.tempoDeFesta}</TableCell>
+                      <TableCell>{event.endereco}</TableCell>
+                      <TableCell>{event.observacoes || 'N/A'}</TableCell>
+                      <TableCell>{event.cliente ? event.cliente.nome : 'N/A'}</TableCell>
+                      <TableCell>{event.cliente ? event.cliente.sobrenome : 'N/A'}</TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={7} style={{ textAlign: 'center' }}>
+                      Nenhum evento cadastrado
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
         </div>
       </div>
     </>
