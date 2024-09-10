@@ -4,7 +4,7 @@ import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import HomePage from './pages/Home/HomePage';
 import ClientesPage from './pages/ClientesPage';
 import EventosPage from './pages/Eventos/EventosPage';
-import FinanceiroPage from './pages/FinanceiroPage';
+import FinanceiroPage from './pages/Financeiro/FinanceiroPage';
 import ContratosPage from './pages/Contratos/ContratosPage';
 
 const drawerWidth = 240;

@@ -23,6 +23,7 @@ interface FormData {
   tempoDeFesta: string;
   endereco: string;
   clienteId: number;
+  valorTotalPacote: number;
   observacoes: string;
 }
 
@@ -40,6 +41,7 @@ interface Evento {
   endereco: string;
   clienteId: number; // Deve ser um número
   observacoes?: string;
+  valorTotalPacote: number;
   formattedDate?: string; // Adicionado para a data formatada
   cliente?: Cliente; // Adicionado para associar o cliente
 }
@@ -55,6 +57,7 @@ const EventFormWithTable: React.FC = () => {
     tempoDeFesta: '',
     endereco: '',
     clienteId: 0,
+    valorTotalPacote: 0,
     observacoes: '',
   });
   const [selectedClient, setSelectedClient] = useState<{ id: number; nome: string } | null>(null);
@@ -94,6 +97,7 @@ const EventFormWithTable: React.FC = () => {
       tempoDeFesta: '',
       endereco: '',
       clienteId: 0, // Garantir que seja um número, ou ajustar conforme necessário
+      valorTotalPacote: 0,
       observacoes: ''
     });
   };
@@ -127,14 +131,20 @@ const EventFormWithTable: React.FC = () => {
   const cadastrarEvento = async () => {
     try {
       const formattedDate = formatDateForApi(selectedDate);
-      
+      console.log();
+      console.log();
+      console.log();
+      console.log();
+      console.log();
+      console.log();
       const response = await apiClient.post('api/Eventos', {
         data: formattedDate,
         pacote: formData.pacote,
         tempoDeFesta: formData.tempoDeFesta,
         endereco: formData.endereco,
         observacoes: formData.observacoes,
-        clienteId: formData.clienteId
+        clienteId: formData.clienteId,
+        valorTotalPacote: formData.valorTotalPacote
       }, {
         headers: {
           'Content-Type': 'application/json'
@@ -289,6 +299,19 @@ const EventFormWithTable: React.FC = () => {
                   <option value="Arco-Iris">Arco-Iris</option>
                   <option value="Planetario">Planetario</option>
                 </select>
+              </label>
+            </div>
+
+            <div style={{ marginBottom: '15px' }}>
+              <label>
+                Valor do Pacote (R$):
+                <input
+                  type="text"
+                  name="valorTotalPacote"
+                  value={formData.valorTotalPacote}
+                  onChange={handleChange}
+                  placeholder="Valor do Pacote"
+                />
               </label>
             </div>
 
