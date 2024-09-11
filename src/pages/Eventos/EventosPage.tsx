@@ -10,6 +10,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import ClientModal from '../../components/clienteModal';
 import TimePicker from '../../components/TimePicker'; 
 import moment from 'moment';
+import CustomizedTables from '../../components/Table';
 
 const apiClient = axios.create({
   baseURL: 'http://localhost:5250', // URL do backend
@@ -232,7 +233,29 @@ const EventFormWithTable: React.FC = () => {
     fetchEventos();
   }, []);
 
+  const columns = [
+    { id: 'data', label: 'Data', format: (value: string | number | Date) => new Date(value).toLocaleDateString('pt-BR') },
+    { id: 'pacote', label: 'Pacote' },
+    { id: 'horarioFesta', label: 'Horário', format: (value: moment.MomentInput) => moment(value).format('LT') },
+    { id: 'tempoDeFesta', label: 'Duração' },
+    { id: 'endereco', label: 'Endereço' },
+    { id: 'observacoes', label: 'Observações', format: (value: any) => value || 'N/A' },
+    { id: 'clienteNome', label: 'Nome', format: (value: any) => value || 'N/A' },
+    { id: 'clienteSobrenome', label: 'Sobrenome', format: (value: any) => value || 'N/A' },
+  ];
 
+  // Map the events data to match the columns
+  const formattedEvents = events.map((event) => ({
+    data: event.data,
+    pacote: event.pacote,
+    horarioFesta: event.horarioFesta,
+    tempoDeFesta: event.tempoDeFesta,
+    endereco: event.endereco,
+    observacoes: event.observacoes,
+    clienteNome: event.cliente ? event.cliente.nome : 'N/A',
+    clienteSobrenome: event.cliente ? event.cliente.sobrenome : 'N/A',
+  }));
+  
   if (loading) return <p>Loading...</p>;
   if (error) return <p>{error}</p>;
 
@@ -381,7 +404,8 @@ const EventFormWithTable: React.FC = () => {
 
         <div style={{ flex: 1 }}>
           <h2>Eventos Cadastrados</h2>
-          <TableContainer component={Paper} style={{ marginTop: '20px' }}>
+          <CustomizedTables data={formattedEvents} columns={columns} />
+          {/* <TableContainer component={Paper} style={{ marginTop: '20px' }}>
             <Table>
               <TableHead>
                 <TableRow>
@@ -418,7 +442,8 @@ const EventFormWithTable: React.FC = () => {
                 )}
               </TableBody>
             </Table>
-          </TableContainer>
+          </TableContainer> */}
+          
         </div>
       </div>
     </>

@@ -28,9 +28,10 @@ function App() {
           }}
           anchor="left"
         >
+          <h5 style={{ textAlign: 'center', marginTop: 30 }}>Sistema de Gestão</h5>
           <List>
-            <ListItem button component={Link} to="/" style={{ marginLeft: 10 }}> 
-            <FontAwesomeIcon icon={faHome} />
+            <ListItem button component={Link} to="/" style={{ marginLeft: 10 }}>
+              <FontAwesomeIcon icon={faHome} />
               <ListItemText primary="Home" style={{ marginLeft: 10 }}/>
             </ListItem>
             <ListItem button component={Link} to="/clientes" style={{ marginLeft: 8 }}>
