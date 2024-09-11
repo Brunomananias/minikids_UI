@@ -8,7 +8,8 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import ClientModal from '../../components/clienteModal';
-import { JSX } from 'react/jsx-runtime';
+import TimePicker from '../../components/TimePicker'; 
+import moment from 'moment';
 
 const apiClient = axios.create({
   baseURL: 'http://localhost:5250', // URL do backend
@@ -20,6 +21,7 @@ const apiClient = axios.create({
 interface FormData {
   data: string;
   pacote: string;
+  horarioFesta: string;
   tempoDeFesta: string;
   endereco: string;
   clienteId: number;
@@ -37,6 +39,7 @@ interface Evento {
   id: number;
   data: string; // ou Date, dependendo de como você trata isso
   pacote: string;
+  horarioFesta: string;
   tempoDeFesta: string;
   endereco: string;
   clienteId: number; // Deve ser um número
@@ -54,12 +57,14 @@ const EventFormWithTable: React.FC = () => {
   const [formData, setFormData] = useState<FormData>({
     data: '',
     pacote: '',
+    horarioFesta: '',
     tempoDeFesta: '',
     endereco: '',
     clienteId: 0,
     valorTotalPacote: 0,
     observacoes: '',
   });
+  const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [selectedClient, setSelectedClient] = useState<{ id: number; nome: string } | null>(null);
   const [abrirModalClientes, setAbrirModalClientes] = useState<boolean>(false);
   const [clientes, setClientes] = useState<Cliente[]>([]);
@@ -94,6 +99,7 @@ const EventFormWithTable: React.FC = () => {
     setFormData({
       data: '',
       pacote: '',
+      horarioFesta: '',
       tempoDeFesta: '',
       endereco: '',
       clienteId: 0, // Garantir que seja um número, ou ajustar conforme necessário
@@ -128,18 +134,18 @@ const EventFormWithTable: React.FC = () => {
     return utcDate.toISOString().replace('Z', '');  // Remove o 'Z' (indicador de UTC) se necessário
   };
 
+  const handleTimeChange = (newTime: string | null) => {
+    setSelectedTime(newTime);
+  };
+
   const cadastrarEvento = async () => {
     try {
       const formattedDate = formatDateForApi(selectedDate);
-      console.log();
-      console.log();
-      console.log();
-      console.log();
-      console.log();
-      console.log();
+      const formattedTime = selectedTime ? `1970-01-01T${selectedTime}:00` : null;
       const response = await apiClient.post('api/Eventos', {
         data: formattedDate,
         pacote: formData.pacote,
+        horarioFesta: formattedTime,
         tempoDeFesta: formData.tempoDeFesta,
         endereco: formData.endereco,
         observacoes: formData.observacoes,
@@ -150,7 +156,7 @@ const EventFormWithTable: React.FC = () => {
           'Content-Type': 'application/json'
         }
       })
-
+      console.log(response.data)
       setEvents([...events, response.data]);
       fetchEventos();
       Swal.fire({
@@ -222,33 +228,6 @@ const EventFormWithTable: React.FC = () => {
     }
   };
 
-  // useEffect(() => {
-  //   const fetchEventos = async () => {
-  //     try {
-  //       const response = await apiClient.get<Evento[]>('/api/Eventos');
-  //       // Formatar as datas
-  //       const formattedEvents = response.data.map((event) => {
-  //         // Converter a string ISO para um objeto Date
-  //         const date = new Date(event.data);
-  //         // Verificar se a data é válida
-  //         const formattedDate = isNaN(date.getTime()) ? 'Data inválida' : date.toLocaleDateString('pt-BR');
-
-  //         return {
-  //           ...event,
-  //           formattedDate
-  //         };
-  //       });
-  //       setEvents(formattedEvents);
-  //     } catch (err) {
-  //       setError('Erro ao carregar dados');
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-
-  //   fetchEventos();
-  // }, []);
-
   useEffect(() => {
     fetchEventos();
   }, []);
@@ -278,9 +257,6 @@ const EventFormWithTable: React.FC = () => {
                       value={selectedDate}
                       onChange={(newValue) => setSelectedDate(newValue)}
                     />
-                    {selectedDate && (
-                      <p>Data selecionada: {selectedDate.toISOString().split('T')[0]}</p>
-                    )}
                   </Box>
                 </LocalizationProvider>
               </label>
@@ -316,6 +292,10 @@ const EventFormWithTable: React.FC = () => {
             </div>
 
             <div style={{ marginBottom: '15px' }}>
+            <TimePicker onChange={handleTimeChange} />
+            </div>
+
+            <div style={{ marginBottom: '15px' }}>
               <label>
                 Tempo de Festa (em horas):
                 <input
@@ -323,7 +303,7 @@ const EventFormWithTable: React.FC = () => {
                   name="tempoDeFesta"
                   value={formData.tempoDeFesta}
                   onChange={handleChange}
-                  placeholder="Duração da festa"
+                  placeholder="00:00:00"
                 />
               </label>
             </div>
@@ -407,6 +387,7 @@ const EventFormWithTable: React.FC = () => {
                 <TableRow>
                   <TableCell>Data</TableCell>
                   <TableCell>Pacote</TableCell>
+                  <TableCell>Horario</TableCell>
                   <TableCell>Duração</TableCell>
                   <TableCell>Endereço</TableCell>
                   <TableCell>Observações</TableCell>
@@ -420,6 +401,7 @@ const EventFormWithTable: React.FC = () => {
                     <TableRow key={event.id}>
                       <TableCell>{new Date(event.data).toLocaleDateString('pt-BR')}</TableCell>
                       <TableCell>{event.pacote}</TableCell>
+                      <TableCell>{moment(event.horarioFesta).format('LT')}</TableCell>
                       <TableCell>{event.tempoDeFesta}</TableCell>
                       <TableCell>{event.endereco}</TableCell>
                       <TableCell>{event.observacoes || 'N/A'}</TableCell>

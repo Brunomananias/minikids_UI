@@ -6,7 +6,9 @@ import ClientesPage from './pages/ClientesPage';
 import EventosPage from './pages/Eventos/EventosPage';
 import FinanceiroPage from './pages/Financeiro/FinanceiroPage';
 import ContratosPage from './pages/Contratos/ContratosPage';
-
+import CalendarioPage from './pages/Calendario/CalendarioPage';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faHome, faUsers, faCalendar, faDollarSign, faFileContract, faCog } from '@fortawesome/free-solid-svg-icons';
 const drawerWidth = 240;
 
 function App() {
@@ -27,20 +29,29 @@ function App() {
           anchor="left"
         >
           <List>
-            <ListItem button component={Link} to="/">
-              <ListItemText primary="Home" />
+            <ListItem button component={Link} to="/" style={{ marginLeft: 10 }}> 
+            <FontAwesomeIcon icon={faHome} />
+              <ListItemText primary="Home" style={{ marginLeft: 10 }}/>
             </ListItem>
-            <ListItem button component={Link} to="/clientes">
-              <ListItemText primary="Clientes" />
+            <ListItem button component={Link} to="/clientes" style={{ marginLeft: 8 }}>
+            <FontAwesomeIcon icon={faUsers} />
+              <ListItemText primary="Clientes" style={{ marginLeft: 8 }}/>
             </ListItem>
-            <ListItem button component={Link} to="/eventos">
-              <ListItemText primary="Eventos" />
+            <ListItem button component={Link} to="/eventos" style={{ marginLeft: 10 }}>
+            <FontAwesomeIcon icon={faCalendar} />
+              <ListItemText primary="Eventos" style={{ marginLeft: 10 }}/>
             </ListItem>
-            <ListItem button component={Link} to="/financeiro">
-              <ListItemText primary="Financeiro" />
+            <ListItem button component={Link} to="/financeiro" style={{ marginLeft: 11 }}>
+            <FontAwesomeIcon icon={faDollarSign} />
+              <ListItemText primary="Financeiro" style={{ marginLeft: 11 }}/>
             </ListItem> 
-            <ListItem button component={Link} to="/contratos">
-              <ListItemText primary="Contratos" />
+            <ListItem button component={Link} to="/calendario" style={{ marginLeft: 10 }}>
+            <FontAwesomeIcon icon={faCalendar} />
+              <ListItemText primary="Calendario" style={{ marginLeft: 10 }}/>
+            </ListItem> 
+            <ListItem button component={Link} to="/contratos" style={{ marginLeft: 10 }}>
+             <FontAwesomeIcon icon={faFileContract} />
+              <ListItemText primary="Contratos" style={{ marginLeft: 10 }}/>
             </ListItem>
           </List>
           <Divider />
@@ -60,6 +71,7 @@ function App() {
             <Route path="/clientes" element={<ClientesPage />} />
             <Route path="/eventos" element={<EventosPage />} />
             <Route path="/financeiro" element={<FinanceiroPage />} />
+            <Route path="/calendario" element={<CalendarioPage />} />
             <Route path="/contratos" element={<ContratosPage/>}/>
           </Routes>
         </Box>

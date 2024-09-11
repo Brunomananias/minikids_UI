@@ -6,6 +6,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import ClientModal from '../../components/clienteModal'; // Certifique-se de que o caminho está correto
 import PagamentoTable from '../../components/pagamentoTable';
 import Swal from 'sweetalert2';
+import moment from 'moment';
 const apiClient = axios.create({
     baseURL: 'http://localhost:5250', // URL do backend
     headers: {
@@ -48,7 +49,6 @@ const FinanceiroPage: React.FC = () => {
     const [eventos, setEventos] = useState<Evento[]>([]);
     const [selectedEvento, setSelectedEvento] = useState<Evento | null>(null);
     const [novoPagamento, setNovoPagamento] = useState<number>(0);
-
     const carregarPagamento = async (clienteId: number) => {
         try {
             const response = await apiClient.get(`/api/clientes/${clienteId}/pagamentos`);
@@ -85,13 +85,29 @@ const FinanceiroPage: React.FC = () => {
     const handleSelecionarCliente = async (id: number) => {
         try {
             const response = await apiClient.get(`/api/clientes/${id}/eventos`); // Ajuste a URL da API conforme necessário
+            const eventosData = response.data;
+    
+            // Define o cliente selecionado
             setSelectedCliente(clientes.find(cliente => cliente.id === id) || null);
-            setEventos(response.data);
+    
+            // Formata as datas dos eventos
+            const formattedEvents = eventosData.map((evento: any) => ({
+                ...evento,
+                start: moment(evento.data).toDate(), // Converte a data para objeto Date
+                end: moment(evento.data).add(moment.duration(evento.tempoDeFesta)).toDate(), // Adiciona a duração ao evento
+                formattedDate: moment(evento.data).format('DD/MM/YYYY HH:mm:ss') // Adiciona a data formatada se precisar exibir
+            }));
+    
+            // Atualiza o estado com os eventos formatados
+            setEventos(formattedEvents);
             setSelectedEvento(null); // Limpa o evento selecionado
-            setIdCliente(response.data[0].clienteId)
-            setIdEvento(response.data[0].id)
-            carregarPagamentosRealizados(response.data[0].id)
-            carregarPagamento(response.data[0].clienteId);
+            setIdCliente(eventosData[0].clienteId);
+            setIdEvento(eventosData[0].id);
+    
+            // Carrega pagamentos realizados e o pagamento do cliente
+            carregarPagamentosRealizados(eventosData[0].id);
+            carregarPagamento(eventosData[0].clienteId);
+    
         } catch (error) {
             console.error('Erro ao buscar eventos do cliente:', error);
         }
@@ -181,7 +197,7 @@ const FinanceiroPage: React.FC = () => {
                                 <tr key={evento.id}>
                                     <td>{evento.id}</td>
                                     <td>{evento.pacote}</td>
-                                    <td>{evento.data}</td>
+                                    <td>{moment(evento.data).format('DD/MM/YYYY')}</td> {/* Exibe a data formatada */}
                                     <td>
                                         <Button onClick={() => handleSelectEvento(evento.id)}>Ver Detalhes</Button>
                                     </td>
@@ -198,7 +214,7 @@ const FinanceiroPage: React.FC = () => {
                     <Form>
                         <Form.Group controlId="formEventoData">
                             <Form.Label>Data</Form.Label>
-                            <Form.Control type="text" value={selectedEvento.data} readOnly />
+                            <Form.Control type="text" value={moment(selectedEvento.data).format('DD/MM/YYYY')} readOnly />
                         </Form.Group>
                         <Form.Group controlId="formEventoPacote">
                             <Form.Label>Pacote</Form.Label>
