@@ -5,7 +5,7 @@ import FormularioCadastro from '../components/formularioCadastro'; // Certifique
 const Clientes = () => {
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      <AppBar position="static">
+      <AppBar position="static"  style={{ backgroundColor: '#ffcc80', color: 'black' }}>
         <Toolbar>
           <Typography variant="h6">Clientes</Typography>
         </Toolbar>

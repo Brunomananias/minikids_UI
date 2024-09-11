@@ -1,7 +1,7 @@
 import React, { useState, ChangeEvent, FormEvent, useEffect } from 'react';
 import Calendar from 'react-calendar'; // Importe a biblioteca de calendário
 import 'react-calendar/dist/Calendar.css'; // Importe os estilos padrão
-import { AppBar, Toolbar, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TextField, Button, Select, MenuItem, InputLabel, FormControl, FilledTextFieldProps, OutlinedTextFieldProps, StandardTextFieldProps, TextFieldVariants, Box } from '@mui/material';
+import { AppBar, Toolbar, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TextField, Button, Select, MenuItem, InputLabel, FormControl, FilledTextFieldProps, OutlinedTextFieldProps, StandardTextFieldProps, TextFieldVariants, Box, TablePagination, IconButton } from '@mui/material';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -11,6 +11,8 @@ import ClientModal from '../../components/clienteModal';
 import TimePicker from '../../components/TimePicker'; 
 import moment from 'moment';
 import CustomizedTables from '../../components/Table';
+import { faTrash } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 const apiClient = axios.create({
   baseURL: 'http://localhost:5250', // URL do backend
@@ -65,6 +67,8 @@ const EventFormWithTable: React.FC = () => {
     valorTotalPacote: 0,
     observacoes: '',
   });
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [selectedClient, setSelectedClient] = useState<{ id: number; nome: string } | null>(null);
   const [abrirModalClientes, setAbrirModalClientes] = useState<boolean>(false);
@@ -84,6 +88,17 @@ const EventFormWithTable: React.FC = () => {
 
     }));
   };
+
+  const handleChangePage = (event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
+  const paginatedEventos = events.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -194,6 +209,31 @@ const EventFormWithTable: React.FC = () => {
     }
   }
 
+  const handleDelete = async (id: number) => {
+    try {
+      console.log('Deleting client with ID:', id);
+      const response = await apiClient.delete(`/api/eventos/${id}`);
+      console.log('Response from server:', response);
+      setEvents(events.filter(evento => evento.id !== id));
+      Swal.fire({
+        position: 'center',
+        icon: 'success',
+        title: 'Evento excluído com sucesso!',
+        showConfirmButton: false,
+        timer: 1500
+      });
+    } catch (error) {
+      console.error('Erro ao excluir cliente:', error);
+      Swal.fire({
+        position: 'center',
+        icon: 'error',
+        title: 'Erro ao excluir cliente',
+        text: 'Houve um problema ao tentar excluir o cliente. Tente novamente mais tarde.',
+        showConfirmButton: true,
+      });
+    }
+  };
+
   const fetchEventos = async () => {
     try {
       const [eventResponse, clientResponse] = await Promise.all([
@@ -261,12 +301,11 @@ const EventFormWithTable: React.FC = () => {
 
   return (
     <>
-      <AppBar position="static">
+    <AppBar position="static" style={{ backgroundColor: '#ffcc80' }}>
         <Toolbar>
           <Typography variant="h6">Eventos</Typography>
         </Toolbar>
       </AppBar>
-
       <div style={{ display: 'flex', flexDirection: 'row', padding: '20px' }}>
         <div style={{ flex: 1, marginRight: '20px' }}>
           <h2>Cadastro de Evento</h2>
@@ -404,8 +443,8 @@ const EventFormWithTable: React.FC = () => {
 
         <div style={{ flex: 1 }}>
           <h2>Eventos Cadastrados</h2>
-          <CustomizedTables data={formattedEvents} columns={columns} />
-          {/* <TableContainer component={Paper} style={{ marginTop: '20px' }}>
+          {/* <CustomizedTables data={formattedEvents} columns={columns}/> */}
+          <TableContainer component={Paper} style={{ marginTop: '20px' }}>
             <Table>
               <TableHead>
                 <TableRow>
@@ -417,11 +456,11 @@ const EventFormWithTable: React.FC = () => {
                   <TableCell>Observações</TableCell>
                   <TableCell>Cliente Nome</TableCell>
                   <TableCell>Cliente Sobrenome</TableCell>
+                  <TableCell></TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {events.length > 0 ? (
-                  events.map((event) => (
+              {paginatedEventos.map((event) => (
                     <TableRow key={event.id}>
                       <TableCell>{new Date(event.data).toLocaleDateString('pt-BR')}</TableCell>
                       <TableCell>{event.pacote}</TableCell>
@@ -431,19 +470,28 @@ const EventFormWithTable: React.FC = () => {
                       <TableCell>{event.observacoes || 'N/A'}</TableCell>
                       <TableCell>{event.cliente ? event.cliente.nome : 'N/A'}</TableCell>
                       <TableCell>{event.cliente ? event.cliente.sobrenome : 'N/A'}</TableCell>
+                      <TableCell>
+                  <IconButton
+                      color="secondary"
+                      onClick={() => handleDelete(event.id!)}
+                    >
+                      <FontAwesomeIcon icon={faTrash} />
+                    </IconButton>
+                  </TableCell>
                     </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={7} style={{ textAlign: 'center' }}>
-                      Nenhum evento cadastrado
-                    </TableCell>
-                  </TableRow>
-                )}
+                  ))}
               </TableBody>
             </Table>
-          </TableContainer> */}
-          
+          </TableContainer> 
+          <TablePagination
+          rowsPerPageOptions={[5, 10, 25]}
+          component="div"
+          count={events.length}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+        />
         </div>
       </div>
     </>

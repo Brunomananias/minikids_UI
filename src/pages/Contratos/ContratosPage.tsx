@@ -53,13 +53,13 @@ const ContratosPage: React.FC = () => {
 
   return (
     <>
-    <AppBar position="static">
-        <Toolbar>
-          <Typography variant="h6">Contratos</Typography>
-        </Toolbar>
-      </AppBar>
+    <AppBar position="static" style={{ backgroundColor: '#ffcc80', color: 'black' }}>
+                <Toolbar>
+                    <Typography variant="h6">Contratos</Typography>
+                </Toolbar>
+            </AppBar>
     <div>
-      <h1>Preencha os dados do contrato</h1>
+      <h2>Preencha os dados do contrato</h2>
       <form onSubmit={(e) => { e.preventDefault(); handleGeneratePDF(); }}>
         <div>
           <label>Nome do Cliente:</label>

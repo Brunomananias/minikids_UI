@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Box, TextField, Button, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Grid, Container, TablePagination } from '@mui/material';
+import { Box, TextField, Button, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Grid, Container, TablePagination, IconButton } from '@mui/material';
 import axios from 'axios';
 import Swal from 'sweetalert2';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTrash } from '@fortawesome/free-solid-svg-icons';
 
 const apiClient = axios.create({
   baseURL: 'http://localhost:5250', // URL do backend
@@ -9,16 +11,16 @@ const apiClient = axios.create({
     'Content-Type': 'application/json',
   },
 });
-  
-  interface Cliente {
-    id?: number;
-    nome: string;
-    sobrenome: string;
-    celular: string;
-    email: string;
-    endereco: string;
-    eventos: [] // Inclua eventos, mesmo que esteja vazio
-  }
+
+interface Cliente {
+  id?: number;
+  nome: string;
+  sobrenome: string;
+  celular: string;
+  email: string;
+  endereco: string;
+  eventos: []
+}
 
 const FormularioCadastro: React.FC = () => {
   const [formValues, setFormValues] = React.useState<Cliente>({
@@ -27,24 +29,25 @@ const FormularioCadastro: React.FC = () => {
     celular: '',
     email: '',
     endereco: '',
-    eventos: [] // Inclua eventos, mesmo que esteja vazio
+    eventos: []
   });
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [selectedCliente, setSelectedCliente] = useState<Cliente | null>(null);
 
-  
-const handleChangePage = (event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => {
+  const handleChangePage = (event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => {
     setPage(newPage);
   };
 
   const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
     setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0); // Voltar para a primeira página ao mudar o número de linhas por página
+    setPage(0);
   };
-const paginatedClientes = clientes.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+
+  const paginatedClientes = clientes.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setFormValues({
@@ -55,21 +58,18 @@ const paginatedClientes = clientes.slice(page * rowsPerPage, page * rowsPerPage 
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    // Handle form submission
-    console.log('Form submitted', formValues);
+    if (selectedCliente) {
+      atualizarCliente();
+    } else {
+      cadastrarCliente();
+    }
   };
 
   const cadastrarCliente = async () => {
     try {
-      const response = await apiClient.post('/api/clientes', {
-        nome: formValues.nome,
-        sobrenome: formValues.sobrenome,
-        celular: formValues.celular,
-        email: formValues.email,
-        endereco: formValues.endereco,
-      });
-      const clienteCriado = response.data; 
-      
+      const response = await apiClient.post('/api/clientes', formValues);
+      const clienteCriado = response.data;
+
       setClientes([...clientes, clienteCriado]);
       Swal.fire({
         position: "center",
@@ -78,17 +78,71 @@ const paginatedClientes = clientes.slice(page * rowsPerPage, page * rowsPerPage 
         showConfirmButton: false,
         timer: 1500
       });
-      setFormValues({
-        nome: '',
-        sobrenome: '',
-        celular: '',
-        email: '',
-        endereco: '',
-        eventos: [] // Inclua eventos, mesmo que esteja vazio
-      });
+      handleAddNew(); // Limpar formulário após cadastro
     } catch (error) {
       console.error('Erro ao cadastrar cliente:', error);
     }
+  };
+
+  const atualizarCliente = async () => {
+    try {
+      if (!selectedCliente?.id) return;
+      await apiClient.put(`/api/clientes/${selectedCliente.id}`, formValues);
+      setClientes(clientes.map(cliente => cliente.id === selectedCliente.id ? formValues : cliente));
+      Swal.fire({
+        position: "center",
+        icon: "success",
+        title: "Atualizado com sucesso!",
+        showConfirmButton: false,
+        timer: 1500
+      });
+      handleAddNew(); // Limpar formulário após atualização
+    } catch (error) {
+      console.error('Erro ao atualizar cliente:', error);
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    try {
+      console.log('Deleting client with ID:', id);
+      const response = await apiClient.delete(`/api/clientes/${id}`);
+      console.log('Response from server:', response);
+      setClientes(clientes.filter(cliente => cliente.id !== id));
+      Swal.fire({
+        position: 'center',
+        icon: 'success',
+        title: 'Cliente excluído com sucesso!',
+        showConfirmButton: false,
+        timer: 1500
+      });
+    } catch (error) {
+      console.error('Erro ao excluir cliente:', error);
+      Swal.fire({
+        position: 'center',
+        icon: 'error',
+        title: 'Erro ao excluir cliente',
+        text: 'Houve um problema ao tentar excluir o cliente. Tente novamente mais tarde.',
+        showConfirmButton: true,
+      });
+    }
+  };
+  
+
+  const handleRowClick = (cliente: Cliente) => {
+    setSelectedCliente(cliente);
+    setFormValues(cliente);
+  };
+
+  const handleAddNew = () => {
+    setSelectedCliente(null);
+    setFormValues({
+      nome: '',
+      sobrenome: '',
+      celular: '',
+      email: '',
+      endereco: '',
+      eventos: []
+    });
   };
 
   useEffect(() => {
@@ -119,13 +173,13 @@ const paginatedClientes = clientes.slice(page * rowsPerPage, page * rowsPerPage 
         sx={{ mt: 3 }}
       >
         <Typography variant="h4" gutterBottom>
-          Cadastro de Clientes
+          {selectedCliente ? 'Editar Cliente' : 'Cadastro de Clientes'}
         </Typography>
         <Grid container spacing={2}>
           <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
-              label="nome"
+              label="Nome"
               name="nome"
               variant="outlined"
               value={formValues.nome}
@@ -136,7 +190,7 @@ const paginatedClientes = clientes.slice(page * rowsPerPage, page * rowsPerPage 
           <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
-              label="sobrenome"
+              label="Sobrenome"
               name="sobrenome"
               variant="outlined"
               value={formValues.sobrenome}
@@ -147,7 +201,7 @@ const paginatedClientes = clientes.slice(page * rowsPerPage, page * rowsPerPage 
           <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
-              label="email"
+              label="Email"
               name="email"
               variant="outlined"
               type="email"
@@ -159,7 +213,7 @@ const paginatedClientes = clientes.slice(page * rowsPerPage, page * rowsPerPage 
           <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
-              label="celular"
+              label="Celular"
               name="celular"
               variant="outlined"
               type="tel"
@@ -171,8 +225,8 @@ const paginatedClientes = clientes.slice(page * rowsPerPage, page * rowsPerPage 
           <Grid item xs={12}>
             <TextField
               fullWidth
-              label="Endereço" // Atualize o rótulo se necessário
-              name="endereco"  // Certifique-se de que isso corresponde ao nome no estado
+              label="Endereço"
+              name="endereco"
               variant="outlined"
               multiline
               rows={4}
@@ -186,14 +240,22 @@ const paginatedClientes = clientes.slice(page * rowsPerPage, page * rowsPerPage 
               type="submit"
               variant="contained"
               color="primary"
-              onClick={cadastrarCliente}
             >
-              Cadastrar
+              {selectedCliente ? 'Atualizar' : 'Cadastrar'}
             </Button>
+            {selectedCliente && (
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={handleAddNew}
+                style={{ marginLeft: '10px' }}
+              >
+                Cadastrar Novo
+              </Button>
+            )}
           </Grid>
         </Grid>
       </Box>
-      {/* Tabela */}
       <Box sx={{ marginTop: 4 }}>
         <Typography variant="h5" gutterBottom>
           Clientes Cadastrados
@@ -207,30 +269,39 @@ const paginatedClientes = clientes.slice(page * rowsPerPage, page * rowsPerPage 
                 <TableCell>Email</TableCell>
                 <TableCell>Celular</TableCell>
                 <TableCell>Endereço</TableCell>
+                <TableCell></TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {clientes.map((row) => (
-                <TableRow key={row.id}>
-                  <TableCell>{row.nome}</TableCell>
-                  <TableCell>{row.sobrenome}</TableCell>
-                  <TableCell>{row.email}</TableCell>
-                  <TableCell>{row.celular}</TableCell>
-                  <TableCell>{row.endereco}</TableCell>
+              {paginatedClientes.map((cliente) => (
+                <TableRow key={cliente.id} onClick={() => handleRowClick(cliente)} style={{ cursor: 'pointer' }}>
+                  <TableCell>{cliente.nome}</TableCell>
+                  <TableCell>{cliente.sobrenome}</TableCell>
+                  <TableCell>{cliente.email}</TableCell>
+                  <TableCell>{cliente.celular}</TableCell>
+                  <TableCell>{cliente.endereco}</TableCell>
+                  <TableCell>
+                  <IconButton
+                      color="secondary"
+                      onClick={() => handleDelete(cliente.id!)}
+                    >
+                      <FontAwesomeIcon icon={faTrash} />
+                    </IconButton>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
         </TableContainer>
         <TablePagination
-            rowsPerPageOptions={[5, 10, 25]}
-            component="div"
-            count={clientes.length}
-            rowsPerPage={rowsPerPage}
-            page={page}
-            onPageChange={handleChangePage}
-            onRowsPerPageChange={handleChangeRowsPerPage}
-          />
+          rowsPerPageOptions={[5, 10, 25]}
+          component="div"
+          count={clientes.length}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+        />
       </Box>
     </Container>
   );

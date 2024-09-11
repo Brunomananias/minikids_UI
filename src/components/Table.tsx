@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { withStyles, makeStyles } from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
@@ -7,7 +7,6 @@ import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
-import TablePagination from '@mui/material/TablePagination'; // MUI v5 import
 
 const StyledTableCell = withStyles((theme: { palette: { common: { black: any; white: any; }; }; }) => ({
   head: {
@@ -54,62 +53,37 @@ interface CustomizedTablesProps {
 
 export default function CustomizedTables({ data, columns }: CustomizedTablesProps) {
   const classes = useStyles();
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
-
-  const handleChangePage = (event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => {
-    setPage(newPage);
-  };
-
-  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
-  };
-
-  // Slice the data based on pagination
-  const paginatedData = data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
   return (
-    <Paper style={{ marginTop: '20px' }}>
-      <TableContainer>
-        <Table className={classes.table} aria-label="customized table">
-          <TableHead>
-            <TableRow>
-              {columns.map((column) => (
-                <StyledTableCell key={column.id}>{column.label}</StyledTableCell>
-              ))}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {paginatedData.length > 0 ? (
-              paginatedData.map((row, index) => (
-                <StyledTableRow key={index}>
-                  {columns.map((column) => (
-                    <StyledTableCell key={column.id} align={column.align || 'left'}>
-                      {column.format ? column.format(row[column.id]) : row[column.id]}
-                    </StyledTableCell>
-                  ))}
-                </StyledTableRow>
-              ))
-            ) : (
-              <StyledTableRow>
-                <StyledTableCell colSpan={columns.length} style={{ textAlign: 'center' }}>
-                  Nenhum evento cadastrado
-                </StyledTableCell>
+    <TableContainer component={Paper} style={{ marginTop: '20px' }}>
+      <Table className={classes.table} aria-label="customized table">
+        <TableHead>
+          <TableRow>
+            {columns.map((column) => (
+              <StyledTableCell key={column.id}>{column.label}</StyledTableCell>
+            ))}
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {data.length > 0 ? (
+            data.map((row, index) => (
+              <StyledTableRow key={index}>
+                {columns.map((column) => (
+                  <StyledTableCell key={column.id} align={column.align || 'left'}>
+                    {column.format ? column.format(row[column.id]) : row[column.id]}
+                  </StyledTableCell>
+                ))}
               </StyledTableRow>
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
-      <TablePagination
-        rowsPerPageOptions={[5, 10, 25]}
-        component="div"
-        count={data.length}
-        rowsPerPage={rowsPerPage}
-        page={page}
-        onPageChange={handleChangePage}
-        onRowsPerPageChange={handleChangeRowsPerPage}
-      />
-    </Paper>
+            ))
+          ) : (
+            <StyledTableRow>
+              <StyledTableCell colSpan={columns.length} style={{ textAlign: 'center' }}>
+                Nenhum evento cadastrado
+              </StyledTableCell>
+            </StyledTableRow>
+          )}
+        </TableBody>
+      </Table>
+    </TableContainer>
   );
 }
