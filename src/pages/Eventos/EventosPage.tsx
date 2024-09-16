@@ -13,13 +13,7 @@ import moment from 'moment';
 import CustomizedTables from '../../components/Table';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-
-const apiClient = axios.create({
-  baseURL: 'http://localhost:5250', // URL do backend
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
+import apiClient from '../../services/apiClient';
 // Define o tipo para o estado do formulário
 interface FormData {
   data: string;

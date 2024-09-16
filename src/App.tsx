@@ -1,17 +1,20 @@
 import React from 'react';
 import { Box, CssBaseline, AppBar, List, Toolbar, Typography,  ListItem, ListItemText, Drawer, Divider } from '@mui/material';
-import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Link, Navigate } from 'react-router-dom';
 import HomePage from './pages/Home/HomePage';
 import ClientesPage from './pages/ClientesPage';
 import EventosPage from './pages/Eventos/EventosPage';
 import FinanceiroPage from './pages/Financeiro/FinanceiroPage';
 import ContratosPage from './pages/Contratos/ContratosPage';
 import CalendarioPage from './pages/Calendario/CalendarioPage';
+import LoginPage from './pages/Login/LoginPage';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHome, faUsers, faCalendar, faDollarSign, faFileContract, faCog } from '@fortawesome/free-solid-svg-icons';
+
 const drawerWidth = 240;
 
 function App() {
+  const isAuthenticated = true;
   return (
     <Router>
       <Box sx={{ display: 'flex' }}>
@@ -69,11 +72,15 @@ function App() {
           
           <Routes>
             <Route path="/" element={<HomePage />} />
-            <Route path="/clientes" element={<ClientesPage />} />
+            <Route
+          path="/clientes"
+          element={isAuthenticated ? <ClientesPage /> : <Navigate to="/login" />}
+        />
             <Route path="/eventos" element={<EventosPage />} />
             <Route path="/financeiro" element={<FinanceiroPage />} />
             <Route path="/calendario" element={<CalendarioPage />} />
             <Route path="/contratos" element={<ContratosPage/>}/>
+            <Route path="/login" element={<LoginPage />} />
           </Routes>
         </Box>
       </Box>

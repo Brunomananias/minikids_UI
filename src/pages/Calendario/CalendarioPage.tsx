@@ -5,12 +5,7 @@ import { format, parse, startOfWeek, getDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale'; // Importando o locale em português
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import axios from 'axios';
-const apiClient = axios.create({
-    baseURL: 'http://localhost:5250', // URL do backend
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  });
+import apiClient from '../../services/apiClient';
 // Função para localizador usando date-fns
 const localizer = dateFnsLocalizer({
   format,

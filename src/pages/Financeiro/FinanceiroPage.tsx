@@ -8,12 +8,8 @@ import PagamentoTable from '../../components/pagamentoTable';
 import Swal from 'sweetalert2';
 import moment from 'moment';
 import { AppBar, Toolbar, Typography } from '@mui/material';
-const apiClient = axios.create({
-    baseURL: 'http://localhost:5250', // URL do backend
-    headers: {
-        'Content-Type': 'application/json',
-    },
-});
+import apiClient from '../../services/apiClient';
+
 interface Pagamento {
     id: number;
     valorPago: number;

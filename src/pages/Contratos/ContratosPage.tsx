@@ -6,6 +6,10 @@ import { AppBar, Toolbar, Typography } from '@mui/material';
 interface FormData {
   nomeCliente: string;
   endereco: string;
+  cpf: string;
+  enderecoFesta: string;
+  horarioInicio: string;
+  horarioFim: string;
   // Adicione outros campos conforme necessário
 }
 
@@ -13,11 +17,15 @@ const ContratosPage: React.FC = () => {
   const [formData, setFormData] = useState<FormData>({
     nomeCliente: '',
     endereco: '',
+    cpf: '',
+    enderecoFesta: '',
+    horarioInicio: '',
+    horarioFim: '',
     // Inicialize outros campos conforme necessário
   });
 
   const handleGeneratePDF = async () => {
-    const pdfUrl = '/contrato_teste.pdf'; // Substitua pelo caminho do seu PDF modelo
+    const pdfUrl = '/contrato.pdf'; // Substitua pelo caminho do seu PDF modelo
     
     // Busque o PDF modelo
     const existingPdfBytes = await fetch(pdfUrl).then(res => res.arrayBuffer());
@@ -30,16 +38,24 @@ const ContratosPage: React.FC = () => {
 
     // Adicione texto no PDF em locais específicos
     page.drawText(formData.nomeCliente, {
-      x: 50,
-      y: 750,
-      size: 30,
+      x: 83,
+      y: 624,
+      size: 12,
       color: rgb(0, 0, 0),
     });
 
+    page.drawText(formData.cpf, {
+      x: 365,
+      y: 624,
+      size: 12,
+      color: rgb(0, 0, 0),
+    });
+
+
     page.drawText(formData.endereco, {
-      x: 50,
-      y: 700,
-      size: 30,
+      x: 170,
+      y: 608,
+      size: 12,
       color: rgb(0, 0, 0),
     });
 
@@ -48,7 +64,7 @@ const ContratosPage: React.FC = () => {
 
     // Cria um blob e faz o download do PDF
     const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-    saveAs(blob, 'Contrato.pdf');
+    saveAs(blob, 'contrato.pdf');
   };
 
   return (
@@ -67,6 +83,14 @@ const ContratosPage: React.FC = () => {
             type="text"
             value={formData.nomeCliente}
             onChange={(e) => setFormData({ ...formData, nomeCliente: e.target.value })}
+          />
+        </div>
+        <div>
+          <label>CPF:</label>
+          <input
+            type="text"
+            value={formData.cpf}
+            onChange={(e) => setFormData({ ...formData, cpf: e.target.value })}
           />
         </div>
         <div>

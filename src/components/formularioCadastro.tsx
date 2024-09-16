@@ -4,13 +4,7 @@ import axios from 'axios';
 import Swal from 'sweetalert2';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
-
-const apiClient = axios.create({
-  baseURL: 'http://localhost:5250', // URL do backend
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
+import apiClient from '../services/apiClient';
 
 interface Cliente {
   id?: number;
