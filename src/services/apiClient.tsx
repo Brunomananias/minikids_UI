@@ -7,7 +7,7 @@ const getToken = () => {
 
 // Criação do cliente Axios
 const apiClient = axios.create({
-  baseURL: 'http://localhost:5250', // URL do backend
+  baseURL: 'https://minikidsapi-gaayfkayexd0a4e2.brazilsouth-01.azurewebsites.net', // URL do backend
   headers: {
     'Content-Type': 'application/json',
   },

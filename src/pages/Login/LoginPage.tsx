@@ -3,12 +3,7 @@ import React, { useState, FormEvent } from 'react';
 import axios from 'axios';
 import './LoginPage.css'; // Importa o CSS para a estilização
 import { useNavigate } from 'react-router-dom';
-const apiClient = axios.create({
-    baseURL: 'http://localhost:5250', // URL do backend
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  });
+import apiClient from '../../services/apiClient';
 
 const LoginPage: React.FC = () => {
     const navigate = useNavigate();
