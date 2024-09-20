@@ -229,7 +229,7 @@ const FormularioCadastro: React.FC = () => {
               required
             />
           </Grid>
-          <Grid item xs={12}>
+          <Grid item xs={2}>
             <Button
               type="submit"
               variant="contained"
@@ -237,12 +237,13 @@ const FormularioCadastro: React.FC = () => {
             >
               {selectedCliente ? 'Atualizar' : 'Cadastrar'}
             </Button>
+
             {selectedCliente && (
               <Button
                 variant="contained"
                 color="secondary"
                 onClick={handleAddNew}
-                style={{ marginLeft: '10px' }}
+                style={{ marginTop: '10px' }}
               >
                 Cadastrar Novo
               </Button>
