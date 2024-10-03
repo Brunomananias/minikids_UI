@@ -8,15 +8,17 @@ import {
     ListItem,
     ListItemText,
     Divider,
+    Typography,
 } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faHome, faUsers, faCalendar, faDollarSign, faFileContract } from '@fortawesome/free-solid-svg-icons';
+import { faUsers, faCalendar, faDollarSign, faFileContract } from '@fortawesome/free-solid-svg-icons';
 
-const drawerWidth = 200;
+const drawerWidth = 240;
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const navigate = useNavigate();
+    
     const handleLogout = () => {
         localStorage.removeItem('jwtToken');
         navigate('/login');
@@ -33,45 +35,37 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                     '& .MuiDrawer-paper': {
                         width: drawerWidth,
                         boxSizing: 'border-box',
+                        backgroundColor: '#2c3e50', // Cor de fundo da sidebar
+                        color: '#ecf0f1', // Cor do texto
                     },
                 }}
                 anchor="left"
             >
-                <h5 style={{ textAlign: 'center', marginTop: 30 }}>Sistema de Gestão</h5>
+                <Box sx={{ padding: 2, textAlign: 'center' }}>
+                    <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#ecf0f1' }}>
+                        Sistema de Gestão
+                    </Typography>
+                </Box>
+                <Divider sx={{ backgroundColor: '#34495e' }} />
                 <List>
-                    <ListItem button component={Link} to="/" style={{ marginLeft: 10 }}>
-                        <FontAwesomeIcon icon={faHome} />
-                        <ListItemText primary="Home" style={{ marginLeft: 10 }} />
-                    </ListItem>
-                    <ListItem button component={Link} to="/clientes" style={{ marginLeft: 8 }}>
-                        <FontAwesomeIcon icon={faUsers} />
-                        <ListItemText primary="Clientes" style={{ marginLeft: 8 }} />
-                    </ListItem>
-                    <ListItem button component={Link} to="/eventos" style={{ marginLeft: 10 }}>
-                        <FontAwesomeIcon icon={faCalendar} />
-                        <ListItemText primary="Eventos" style={{ marginLeft: 10 }} />
-                    </ListItem>
-                    <ListItem button component={Link} to="/financeiro" style={{ marginLeft: 11 }}>
-                        <FontAwesomeIcon icon={faDollarSign} />
-                        <ListItemText primary="Financeiro" style={{ marginLeft: 11 }} />
-                    </ListItem>
-                    <ListItem button component={Link} to="/caixa" style={{ marginLeft: 11 }}>
-                        <FontAwesomeIcon icon={faDollarSign} />
-                        <ListItemText primary="Caixa" style={{ marginLeft: 11 }} />
-                    </ListItem>
-                    <ListItem button component={Link} to="/calendario" style={{ marginLeft: 10 }}>
-                        <FontAwesomeIcon icon={faCalendar} />
-                        <ListItemText primary="Calendário" style={{ marginLeft: 10 }} />
-                    </ListItem>
-                    <ListItem button component={Link} to="/contratos" style={{ marginLeft: 10 }}>
-                        <FontAwesomeIcon icon={faFileContract} />
-                        <ListItemText primary="Contratos" style={{ marginLeft: 10 }} />
-                    </ListItem>
+                    {[
+                        { text: 'Clientes', icon: faUsers, path: '/clientes' },
+                        { text: 'Eventos', icon: faCalendar, path: '/eventos' },
+                        { text: 'Financeiro', icon: faDollarSign, path: '/financeiro' },
+                        { text: 'Caixa', icon: faDollarSign, path: '/caixa' },
+                        { text: 'Calendário', icon: faCalendar, path: '/calendario' },
+                        { text: 'Contratos', icon: faFileContract, path: '/contratos' },
+                    ].map((item) => (
+                        <ListItem button component={Link} to={item.path} key={item.text} sx={{ '&:hover': { backgroundColor: '#34495e' } }}>
+                            <FontAwesomeIcon icon={item.icon} />
+                            <ListItemText primary={item.text} sx={{ marginLeft: 2, color: '#ecf0f1' }} />
+                        </ListItem>
+                    ))}
                 </List>
-                <Divider />
+                <Divider sx={{ backgroundColor: '#34495e' }} />
                 <List>
-                    <ListItem button onClick={handleLogout}>
-                        <ListItemText primary="Sair" />
+                    <ListItem button onClick={handleLogout} sx={{ '&:hover': { backgroundColor: '#c0392b' } }}>
+                        <ListItemText primary="Sair" sx={{ color: '#ecf0f1' }} />
                     </ListItem>
                 </List>
             </Drawer>

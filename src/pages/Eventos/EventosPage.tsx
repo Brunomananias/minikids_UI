@@ -1,8 +1,6 @@
 import React, { useState, ChangeEvent, FormEvent, useEffect } from 'react';
-import Calendar from 'react-calendar'; // Importe a biblioteca de calendário
-import 'react-calendar/dist/Calendar.css'; // Importe os estilos padrão
+import 'react-calendar/dist/Calendar.css';
 import { AppBar, Toolbar, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TextField, Button, Select, MenuItem, InputLabel, FormControl, FilledTextFieldProps, OutlinedTextFieldProps, StandardTextFieldProps, TextFieldVariants, Box, TablePagination, IconButton } from '@mui/material';
-import axios from 'axios';
 import Swal from 'sweetalert2';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -10,11 +8,10 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import ClientModal from '../../components/clienteModal';
 import TimePicker from '../../components/TimePicker'; 
 import moment from 'moment';
-import CustomizedTables from '../../components/Table';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import apiClient from '../../services/apiClient';
-// Define o tipo para o estado do formulário
+
 interface FormData {
   data: string;
   pacote: string;
@@ -34,20 +31,20 @@ interface Cliente {
 
 interface Evento {
   id: number;
-  data: string; // ou Date, dependendo de como você trata isso
+  data: string; 
   pacote: string;
   horarioFesta: string;
   tempoDeFesta: string;
   endereco: string;
-  clienteId: number; // Deve ser um número
+  clienteId: number;
   observacoes?: string;
   valorTotalPacote: number;
-  formattedDate?: string; // Adicionado para a data formatada
-  cliente?: Cliente; // Adicionado para associar o cliente
+  formattedDate?: string;
+  cliente?: Cliente; 
 }
 
 interface EventoComCliente extends Evento {
-  cliente?: Cliente; // Aqui 'cliente' é opcional, pois pode não existir para todos os eventos
+  cliente?: Cliente; 
 }
 
 const EventFormWithTable: React.FC = () => {
@@ -105,14 +102,13 @@ const EventFormWithTable: React.FC = () => {
     };
     // Adiciona o evento ao estado de eventos
     setEvents(prevEvents => [...prevEvents, newEvent]);
-    // Limpa o formulário
     setFormData({
       data: '',
       pacote: '',
       horarioFesta: '',
       tempoDeFesta: '',
       endereco: '',
-      clienteId: 0, // Garantir que seja um número, ou ajustar conforme necessário
+      clienteId: 0,
       valorTotalPacote: 0,
       observacoes: ''
     });
@@ -127,11 +123,11 @@ const EventFormWithTable: React.FC = () => {
       // Atualizar o estado do formulário com o cliente selecionado
       setFormData(prevFormData => ({
         ...prevFormData,
-        clienteId: clienteSelecionado.id // Atualiza o ID do cliente como número
+        clienteId: clienteSelecionado.id 
       }));
     }
     
-    setAbrirModalClientes(false); // Fechar o modal após a seleção
+    setAbrirModalClientes(false);
   };
 
   const formatDateForApi = (date: Date | null): string => {
@@ -141,7 +137,7 @@ const EventFormWithTable: React.FC = () => {
     const utcDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
 
     // Formatar a data como ISO 8601 e ajustar o formato para a API
-    return utcDate.toISOString().replace('Z', '');  // Remove o 'Z' (indicador de UTC) se necessário
+    return utcDate.toISOString().replace('Z', '');
   };
 
   const handleTimeChange = (newTime: string | null) => {
@@ -295,21 +291,21 @@ const EventFormWithTable: React.FC = () => {
 
   return (
     <>
-    <AppBar position="static" style={{ backgroundColor: '#ffcc80' }}>
+    <AppBar position="static" style={{ backgroundColor: '#ffcc80', color: 'black' }}>
         <Toolbar>
           <Typography variant="h6">Eventos</Typography>
         </Toolbar>
       </AppBar>
       <div style={{ display: 'flex', flexDirection: 'row', padding: '20px' }}>
         <div style={{ flex: 1, marginRight: '20px' }}>
-          <h2>Cadastro de Evento</h2>
+          <h3>Cadastro</h3>
           <form onSubmit={handleSubmit}>
             <div style={{ marginBottom: '15px' }}>
               <label>
                 <LocalizationProvider dateAdapter={AdapterDateFns}>
                   <Box sx={{ display: 'flex', flexDirection: 'column', maxWidth: 300, margin: 'auto' }}>
                     <DatePicker
-                      label="Selecionar data do evento"
+                      label="data do evento"
                       value={selectedDate}
                       onChange={(newValue) => setSelectedDate(newValue)}
                     />
@@ -431,13 +427,20 @@ const EventFormWithTable: React.FC = () => {
               </label>
             </div>
 
-            <button type="submit" onClick={cadastrarEvento}>Enviar</button>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              onClick={cadastrarEvento}
+            >
+             Cadastrar
+            </Button>
+
           </form>
         </div>
 
         <div style={{ flex: 1 }}>
-          <h2>Eventos Cadastrados</h2>
-          {/* <CustomizedTables data={formattedEvents} columns={columns}/> */}
+          <h3>Eventos Cadastrados</h3>
           <TableContainer component={Paper} style={{ marginTop: '20px' }}>
             <Table>
               <TableHead>

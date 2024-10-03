@@ -72,8 +72,6 @@ const FinanceiroPage: React.FC = () => {
         }
     };
 
-
-
     const carregarPagamentosRealizados = async (id: number) => {
         const response = await apiClient.get(`/api/pagamento/${id}`)
         setPagamentos(response.data)
@@ -81,39 +79,36 @@ const FinanceiroPage: React.FC = () => {
 
     const handleSelecionarCliente = async (id: number) => {
         try {
-            const response = await apiClient.get(`/api/clientes/${id}/eventos`); // Ajuste a URL da API conforme necessário
+            const response = await apiClient.get(`/api/clientes/${id}/eventos`);
             const eventosData = response.data;
 
-            // Define o cliente selecionado
             setSelectedCliente(clientes.find(cliente => cliente.id === id) || null);
 
-            // Formata as datas dos eventos
             const formattedEvents = eventosData.map((evento: any) => ({
                 ...evento,
-                start: moment(evento.data).toDate(), // Converte a data para objeto Date
-                end: moment(evento.data).add(moment.duration(evento.tempoDeFesta)).toDate(), // Adiciona a duração ao evento
-                formattedDate: moment(evento.data).format('DD/MM/YYYY HH:mm:ss') // Adiciona a data formatada se precisar exibir
+                start: moment(evento.data).toDate(), 
+                end: moment(evento.data).add(moment.duration(evento.tempoDeFesta)).toDate(), 
+                formattedDate: moment(evento.data).format('DD/MM/YYYY HH:mm:ss')
             }));
 
             // Atualiza o estado com os eventos formatados
             setEventos(formattedEvents);
-            setSelectedEvento(null); // Limpa o evento selecionado
+            setSelectedEvento(null);
             setIdCliente(eventosData[0].clienteId);
             setIdEvento(eventosData[0].id);
 
-            // Carrega pagamentos realizados e o pagamento do cliente
             carregarPagamentosRealizados(eventosData[0].id);
             carregarPagamento(eventosData[0].clienteId);
 
         } catch (error) {
             console.error('Erro ao buscar eventos do cliente:', error);
         }
-        setShowModal(false); // Fecha o modal após a seleção
+        setShowModal(false);
     };
 
     const handleSelectEvento = async (id: number) => {
         try {
-            const response = await apiClient.get(`/api/eventos/${id}`); // Ajuste a URL da API conforme necessário
+            const response = await apiClient.get(`/api/eventos/${id}`);
             setSelectedEvento(response.data);
         } catch (error) {
             console.error('Erro ao buscar detalhes do evento:', error);
@@ -154,13 +149,11 @@ const FinanceiroPage: React.FC = () => {
 
     // Valores de fallback para evitar problemas se selectedEvento não estiver definido
     const valorTotalPacote = selectedEvento?.valorTotalPacote ?? 0;
-    // const valorPago = selectedEvento?.pagamentos.reduce((acc, pagamento) => acc + pagamento.valorPago, 0) ?? 0;
-    // const valorRestante = valorTotalPacote - valorPago;
+
     useEffect(() => {
-        // Buscar clientes quando o componente é montado
         const fetchClientes = async () => {
             try {
-                const response = await apiClient.get('/api/clientes'); // Ajuste a URL da API conforme necessário
+                const response = await apiClient.get('/api/clientes'); 
                 setClientes(response.data);
             } catch (error) {
                 console.error('Erro ao buscar clientes:', error);
@@ -177,19 +170,16 @@ const FinanceiroPage: React.FC = () => {
                 </Toolbar>
             </AppBar>
             <div>
-                <h1>Financeiro</h1>
-                <Button onClick={() => setShowModal(true)}>Selecionar Cliente</Button>
+                <Button style={{width: '140px', marginTop: 30, marginBottom: 30}} onClick={() => setShowModal(true)}>Selecionar Cliente</Button>
 
                 {selectedCliente && (
                     <>
-                        <h2>Cliente Selecionado</h2>
                         <p><strong>Nome:</strong> {selectedCliente.nome} {selectedCliente.sobrenome}</p>
 
                         <h3>Eventos</h3>
                         <Table striped bordered hover>
                             <thead>
                                 <tr>
-                                    <th>ID</th>
                                     <th>Pacote</th>
                                     <th>Data</th>
                                     <th>Selecionar</th>
@@ -198,7 +188,6 @@ const FinanceiroPage: React.FC = () => {
                             <tbody>
                                 {eventos.map(evento => (
                                     <tr key={evento.id}>
-                                        <td>{evento.id}</td>
                                         <td>{evento.pacote}</td>
                                         <td>{moment(evento.data).format('DD/MM/YYYY')}</td> {/* Exibe a data formatada */}
                                         <td>

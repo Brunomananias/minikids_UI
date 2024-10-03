@@ -16,7 +16,6 @@ const PagamentoTable: React.FC<PagamentoTableProps> = ({ pagamentos }) => {
         <Table striped bordered hover>
             <thead>
                 <tr>
-                    <th>ID</th>
                     <th>Valor Pago</th>
                     <th>Data do Pagamento</th>
                 </tr>
@@ -24,7 +23,6 @@ const PagamentoTable: React.FC<PagamentoTableProps> = ({ pagamentos }) => {
             <tbody>
                 {pagamentos.map(pagamento => (
                     <tr key={pagamento.id}>
-                        <td>{pagamento.id}</td>
                         <td>{pagamento.valorPago.toFixed(2)}</td>
                         <td>{new Date(pagamento.dataPagamento).toLocaleDateString()}</td>
                     </tr>
