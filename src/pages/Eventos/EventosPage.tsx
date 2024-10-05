@@ -1,6 +1,7 @@
+/* eslint-disable react/jsx-no-undef */
 import React, { useState, ChangeEvent, FormEvent, useEffect } from 'react';
 import 'react-calendar/dist/Calendar.css';
-import { AppBar, Toolbar, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TextField, Button, Select, MenuItem, InputLabel, FormControl, FilledTextFieldProps, OutlinedTextFieldProps, StandardTextFieldProps, TextFieldVariants, Box, TablePagination, IconButton } from '@mui/material';
+import { AppBar, Toolbar, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TextField, Button, Select, MenuItem, InputLabel, FormControl, FilledTextFieldProps, OutlinedTextFieldProps, StandardTextFieldProps, TextFieldVariants, Box, TablePagination, IconButton, Grid } from '@mui/material';
 import Swal from 'sweetalert2';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -13,6 +14,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import apiClient from '../../services/apiClient';
 
 interface FormData {
+  id: number;
   data: string;
   pacote: string;
   horarioFesta: string;
@@ -49,6 +51,7 @@ interface EventoComCliente extends Evento {
 
 const EventFormWithTable: React.FC = () => {
   const [formData, setFormData] = useState<FormData>({
+    id: 0,
     data: '',
     pacote: '',
     horarioFesta: '',
@@ -58,6 +61,8 @@ const EventFormWithTable: React.FC = () => {
     valorTotalPacote: 0,
     observacoes: '',
   });
+  const [selectedRowId, setSelectedRowId] = useState<number | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
@@ -94,15 +99,57 @@ const EventFormWithTable: React.FC = () => {
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
 
-    // Verifique se `formData` possui todos os campos necessários
-    const newEvent: Evento = {
-      ...formData,
-      id: 0,
-      clienteId: 0,
-    };
-    // Adiciona o evento ao estado de eventos
-    setEvents(prevEvents => [...prevEvents, newEvent]);
+    if (isEditing) {
+      // Atualizar evento existente
+      const updatedEvent: Evento = {
+        ...formData,
+        id: formData.id, // ID do evento que está sendo editado
+        clienteId: formData.clienteId,
+      };
+
+      // Chamada API para atualizar o evento (exemplo)
+      apiClient.put(`/api/eventos/${updatedEvent.id}`, updatedEvent)
+        .then(response => {
+          // Atualiza o estado de eventos com o evento atualizado
+          setEvents(events.map(event => (event.id === updatedEvent.id ? response.data : event)));
+          Swal.fire({
+            position: "center",
+            icon: "success",
+            title: "Evento atualizado com sucesso!",
+            showConfirmButton: false,
+            timer: 1500
+          });
+         fetchEventos();
+        })
+        .catch(error => {
+          Swal.fire({
+            position: "center",
+            icon: "error",
+            title: "Erro ao atualizar evento!",
+            showConfirmButton: false,
+            timer: 1500
+          });
+        });
+      
+      setIsEditing(false); // Desativar o modo de edição
+    } else {
+      const newEvent: Evento = {
+        ...formData,
+        id: 0,
+        clienteId: formData.clienteId,
+      };
+      setEvents(prevEvents => [...prevEvents, newEvent]);
+      Swal.fire({
+        position: "center",
+        icon: "success",
+        title: "Evento cadastrado com sucesso!",
+        showConfirmButton: false,
+        timer: 1500
+      });
+    }
+
     setFormData({
+      id: 0,
       data: '',
       pacote: '',
       horarioFesta: '',
@@ -224,6 +271,21 @@ const EventFormWithTable: React.FC = () => {
     }
   };
 
+  const handleRowClick = (evento: EventoComCliente) => {
+    setFormData({
+      ...evento,
+      observacoes: evento.observacoes || '',
+    });
+    setSelectedRowId(evento.id);
+    setSelectedClient({
+      id: evento.cliente?.id || 0, 
+      nome: evento.cliente?.nome || '',
+    });
+    setSelectedDate(new Date(evento.data)); 
+    setSelectedTime(evento.horarioFesta); 
+    setIsEditing(true);
+  };
+
   const fetchEventos = async () => {
     try {
       const [eventResponse, clientResponse] = await Promise.all([
@@ -231,7 +293,6 @@ const EventFormWithTable: React.FC = () => {
         apiClient.get<Cliente[]>('/api/Clientes')
       ]);
 
-      // Formatar eventos
       const formattedEvents = eventResponse.data.map((event) => {
         const date = new Date(event.data);
         const formattedDate = isNaN(date.getTime()) ? 'Data inválida' : date.toLocaleDateString('pt-BR');
@@ -343,6 +404,7 @@ const EventFormWithTable: React.FC = () => {
               </label>
             </div>
 
+            <label>Horario da Festa</label>
             <div style={{ marginBottom: '15px' }}>
             <TimePicker onChange={handleTimeChange} />
             </div>
@@ -427,14 +489,26 @@ const EventFormWithTable: React.FC = () => {
               </label>
             </div>
 
+            <Grid item xs={2}>
             <Button
               type="submit"
               variant="contained"
               color="primary"
-              onClick={cadastrarEvento}
             >
-             Cadastrar
+              {isEditing ? 'Atualizar' : 'Cadastrar'}
             </Button>
+
+            {isEditing && (
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={cadastrarEvento}
+                style={{ marginTop: '10px' }}
+              >
+                Cadastrar Evento
+              </Button>
+            )}
+          </Grid>
 
           </form>
         </div>
@@ -458,7 +532,7 @@ const EventFormWithTable: React.FC = () => {
               </TableHead>
               <TableBody>
               {paginatedEventos.map((event) => (
-                    <TableRow key={event.id}>
+                    <TableRow key={event.id} onClick={() => handleRowClick(event)} style={{ backgroundColor: selectedRowId === event.id ? '#f0f0f0' : 'transparent' }}>
                       <TableCell>{new Date(event.data).toLocaleDateString('pt-BR')}</TableCell>
                       <TableCell>{event.pacote}</TableCell>
                       <TableCell>{moment(event.horarioFesta).format('LT')}</TableCell>

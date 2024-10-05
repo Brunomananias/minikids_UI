@@ -1,18 +1,10 @@
-/* LoginPage.css */
-
-body, html {
-  height: 100%;
-  margin: 0;
-}
-
 .login-container {
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100vh;
-  background-image: url('../../../public/images/minikids.png'); /* Aqui é o correto */
+  background-image: url('../../../public/images/background.png'); /* Aqui é o correto */
   background-size: cover;
-  background-position: center;
 }
 
 .form-section {
