@@ -1,5 +1,4 @@
-// src/components/Layout.tsx
-import React from 'react';
+import React, { useState } from 'react';
 import {
     Box,
     CssBaseline,
@@ -9,26 +8,38 @@ import {
     ListItemText,
     Divider,
     Typography,
+    IconButton,
 } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUsers, faCalendar, faDollarSign, faFileContract } from '@fortawesome/free-solid-svg-icons';
+import { faUsers, faCalendar, faDollarSign, faFileContract, faBars } from '@fortawesome/free-solid-svg-icons'; // Importando ícone de menu
+import { ChevronLeft } from '@mui/icons-material';
 
 const drawerWidth = 240;
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    const [open, setOpen] = useState(false); // Estado para controlar a visibilidade do Drawer
     const navigate = useNavigate();
-    
+
     const handleLogout = () => {
         localStorage.removeItem('jwtToken');
         navigate('/login');
     };
 
+    const handleToggleDrawer = () => {
+        setOpen(!open); // Alterna o estado do Drawer
+    };
+
     return (
         <Box sx={{ display: 'flex' }}>
             <CssBaseline />
+            <IconButton onClick={handleToggleDrawer} sx={{ margin: 2, zIndex: 1, marginTop: -110 }}>
+                <FontAwesomeIcon icon={faBars} style={{ color: '#2c3e50' }} />
+            </IconButton>
             <Drawer
-                variant="permanent"
+                variant="temporary" // Mudando para "temporário"
+                open={open}
+                onClose={handleToggleDrawer}
                 sx={{
                     width: drawerWidth,
                     flexShrink: 0,
@@ -41,10 +52,13 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 }}
                 anchor="left"
             >
-                <Box sx={{ padding: 2, textAlign: 'center' }}>
+                <Box sx={{ padding: 2, textAlign: 'left' }}>
                     <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#ecf0f1' }}>
                         Sistema de Gestão
                     </Typography>
+                    <IconButton onClick={handleToggleDrawer} sx={{ position: 'absolute', top: 10, right: 10 }}>
+                        <ChevronLeft style={{ color: '#ecf0f1' }} />
+                    </IconButton>
                 </Box>
                 <Divider sx={{ backgroundColor: '#34495e' }} />
                 <List>

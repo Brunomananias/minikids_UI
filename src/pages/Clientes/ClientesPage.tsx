@@ -5,7 +5,6 @@ import Swal from 'sweetalert2';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 import apiClient from '../../services/apiClient';
-
 interface Cliente {
   id?: number;
   nome: string;
@@ -166,11 +165,11 @@ const FormularioCadastro: React.FC = () => {
         onSubmit={handleSubmit}
         sx={{ mt: 3 }}
       >
-        <Typography variant="h4" gutterBottom>
+        <Typography variant="h4" fontSize={{ xs: 24, sm: 40}} gutterBottom>
           {selectedCliente ? 'Editar Cliente' : 'Cadastro de Clientes'}
         </Typography>
-        <Grid container spacing={2}>
-          <Grid item xs={12} sm={6}>
+        <Grid container spacing={2} item xs={5} sm={10} direction={{ xs: "column", sm: "row"}}>
+          <Grid item xs={5} sm={6}>
             <TextField
               fullWidth
               label="Nome"
@@ -181,7 +180,7 @@ const FormularioCadastro: React.FC = () => {
               required
             />
           </Grid>
-          <Grid item xs={12} sm={6}>
+          <Grid item xs={5} sm={6}>
             <TextField
               fullWidth
               label="Sobrenome"
@@ -192,7 +191,7 @@ const FormularioCadastro: React.FC = () => {
               required
             />
           </Grid>
-          <Grid item xs={12} sm={6}>
+          <Grid item xs={5} sm={6}>
             <TextField
               fullWidth
               label="Email"
@@ -204,7 +203,7 @@ const FormularioCadastro: React.FC = () => {
               required
             />
           </Grid>
-          <Grid item xs={12} sm={6}>
+          <Grid item xs={5} sm={6}>
             <TextField
               fullWidth
               label="Celular"
@@ -216,7 +215,7 @@ const FormularioCadastro: React.FC = () => {
               required
             />
           </Grid>
-          <Grid item xs={12}>
+          <Grid item xs={5}>
             <TextField
               fullWidth
               label="Endereço"
@@ -229,7 +228,8 @@ const FormularioCadastro: React.FC = () => {
               required
             />
           </Grid>
-          <Grid item xs={2}>
+        </Grid>
+        <Grid item xs={2}>
             <Button
               type="submit"
               variant="contained"
@@ -249,55 +249,52 @@ const FormularioCadastro: React.FC = () => {
               </Button>
             )}
           </Grid>
-        </Grid>
       </Box>
       <Box sx={{ marginTop: 4 }}>
-        <Typography variant="h5" gutterBottom>
-          Clientes Cadastrados
-        </Typography>
-        <TableContainer component={Paper}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Nome</TableCell>
-                <TableCell>Sobrenome</TableCell>
-                <TableCell>Email</TableCell>
-                <TableCell>Celular</TableCell>
-                <TableCell>Endereço</TableCell>
-                <TableCell></TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {paginatedClientes.map((cliente) => (
-                <TableRow key={cliente.id} onClick={() => handleRowClick(cliente)} style={{ cursor: 'pointer' }}>
-                  <TableCell>{cliente.nome}</TableCell>
-                  <TableCell>{cliente.sobrenome}</TableCell>
-                  <TableCell>{cliente.email}</TableCell>
-                  <TableCell>{cliente.celular}</TableCell>
-                  <TableCell>{cliente.endereco}</TableCell>
-                  <TableCell>
-                  <IconButton
-                      color="secondary"
-                      onClick={() => handleDelete(cliente.id!)}
-                    >
-                      <FontAwesomeIcon icon={faTrash} />
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-        <TablePagination
-          rowsPerPageOptions={[5, 10, 25]}
-          component="div"
-          count={clientes.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-        />
-      </Box>
+  <Typography variant="h5" gutterBottom>
+    Clientes Cadastrados
+  </Typography>
+  <TableContainer component={Paper} sx={{ overflowX: 'auto', maxWidth: { xs: '100%', sm: 'auto' } }}>
+    <Table sx={{ minWidth: { xs: 350, sm: 650 } }}>
+      <TableHead>
+        <TableRow>
+          <TableCell>Nome</TableCell>
+          <TableCell>Sobrenome</TableCell>
+          <TableCell>Email</TableCell>
+          <TableCell>Celular</TableCell>
+          <TableCell>Endereço</TableCell>
+          <TableCell></TableCell>
+        </TableRow>
+      </TableHead>
+      <TableBody>
+        {paginatedClientes.map((cliente) => (
+          <TableRow key={cliente.id} onClick={() => handleRowClick(cliente)} style={{ cursor: 'pointer' }}>
+            <TableCell>{cliente.nome}</TableCell>
+            <TableCell>{cliente.sobrenome}</TableCell>
+            <TableCell>{cliente.email}</TableCell>
+            <TableCell>{cliente.celular}</TableCell>
+            <TableCell>{cliente.endereco}</TableCell>
+            <TableCell>
+              <IconButton color="secondary" onClick={() => handleDelete(cliente.id!)}>
+                <FontAwesomeIcon icon={faTrash} />
+              </IconButton>
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  </TableContainer>
+  <TablePagination
+    rowsPerPageOptions={[5, 10, 25]}
+    component="div"
+    count={clientes.length}
+    rowsPerPage={rowsPerPage}
+    page={page}
+    onPageChange={handleChangePage}
+    onRowsPerPageChange={handleChangeRowsPerPage}
+  />
+</Box>
+
     </Container>
   );
 }
