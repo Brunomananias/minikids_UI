@@ -15,6 +15,8 @@ import {
   TablePagination,
   IconButton,
   Grid,
+  AppBar,
+  Toolbar
 } from "@mui/material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import apiClient from "../../services/apiClient";
@@ -151,73 +153,81 @@ const CaixaPage: React.FC = () => {
 
   return (
     <>
-      <Box sx={{ marginTop: 4 }}>
-        <Typography variant="h5" gutterBottom>
-          Caixa
-        </Typography>
+      <Box>
+        <AppBar
+          position="static"
+          style={{
+            backgroundColor: "#ffcc80",
+            color: "black",
+            marginBottom: 20,
+          }}
+        >
+          <Toolbar>
+            <Typography variant="h6">Caixa</Typography>
+          </Toolbar>
+        </AppBar>
         <Grid container spacing={3}>
-        <Grid item xs={12} sm={6}>
-        <LocalizationProvider dateAdapter={AdapterDateFns}>
-            <DatePicker
-              label="Selecionar data do evento"
-              value={selectedDate}
-              onChange={(newValue) => setSelectedDate(newValue)}              
+          <Grid item xs={12} sm={6}>
+            <LocalizationProvider dateAdapter={AdapterDateFns}>
+              <DatePicker
+                label="Selecionar data do evento"
+                value={selectedDate}
+                onChange={(newValue) => setSelectedDate(newValue)}
+              />
+            </LocalizationProvider>
+            <TextField
+              fullWidth
+              label="Descrição"
+              name="descricao"
+              variant="outlined"
+              value={formValues.descricao}
+              onChange={handleChange}
+              style={{ marginTop: "10px" }}
+              required
             />
-          </LocalizationProvider>
-          <TextField
-            fullWidth
-            label="Descrição"
-            name="descricao"
-            variant="outlined"
-            value={formValues.descricao}
-            onChange={handleChange}
-            style={{ marginTop: '10px'}}
-            required
-          />
-          <TextField
-            label="Valor"
-            name="valor"
-            variant="outlined"
-            value={formValues.valor}
-            onChange={handleChange}
-            required
-            sx={{ maxWidth: 100, marginTop: '10px' }}
-          />
+            <TextField
+              label="Valor"
+              name="valor"
+              variant="outlined"
+              value={formValues.valor}
+              onChange={handleChange}
+              required
+              sx={{ maxWidth: 100, marginTop: "10px" }}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Origem"
+              name="origem"
+              variant="outlined"
+              value={formValues.origem}
+              onChange={handleChange}
+              required
+            />
+            <TextField
+              fullWidth
+              label="Destino"
+              name="destino"
+              variant="outlined"
+              value={formValues.destino}
+              onChange={handleChange}
+              style={{ marginTop: "10px" }}
+              required
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              sx={{ width: "auto", display: "block" }} // Ajuste aqui
+              onClick={inserirCaixa}
+            >
+              Cadastrar
+            </Button>
+          </Grid>
         </Grid>
-        <Grid item xs={12} sm={6}>
-          <TextField
-            fullWidth
-            label="Origem"
-            name="origem"
-            variant="outlined"
-            value={formValues.origem}
-            onChange={handleChange}
-            required
-          />
-          <TextField
-            fullWidth
-            label="Destino"
-            name="destino"
-            variant="outlined"
-            value={formValues.destino}
-            onChange={handleChange}
-            style={{ marginTop: '10px'}}
-            required
-          />
-
-        </Grid>
-        <Grid item xs={12}>
-          <Button
-            type="submit"
-            variant="contained"
-            color="primary"
-            sx={{ width: 'auto', display: 'block' }} // Ajuste aqui
-            onClick={inserirCaixa}
-          >
-            Cadastrar
-          </Button>
-        </Grid>
-      </Grid>
         <TableContainer component={Paper}>
           <Table>
             <TableHead>
@@ -233,7 +243,9 @@ const CaixaPage: React.FC = () => {
             <TableBody>
               {paginasCaixa.map((caixa) => (
                 <TableRow key={caixa.id}>
-                  <TableCell>{new Date(caixa.data).toLocaleDateString('pt-BR')}</TableCell>
+                  <TableCell>
+                    {new Date(caixa.data).toLocaleDateString("pt-BR")}
+                  </TableCell>
                   <TableCell>{caixa.descricao}</TableCell>
                   <TableCell>{caixa.valor}</TableCell>
                   <TableCell>{caixa.origem}</TableCell>
@@ -241,7 +253,7 @@ const CaixaPage: React.FC = () => {
                   <TableCell>
                     <IconButton
                       color="secondary"
-                        onClick={() => handleDelete(caixa.id!)}
+                      onClick={() => handleDelete(caixa.id!)}
                     >
                       <FontAwesomeIcon icon={faTrash} />
                     </IconButton>
