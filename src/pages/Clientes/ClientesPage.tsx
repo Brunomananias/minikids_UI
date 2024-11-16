@@ -22,6 +22,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import apiClient from "../../services/apiClient";
 import { AppBar, Toolbar } from "@mui/material";
+import Carregamento from "../../components/Carregamento/Carregamento";
 
 interface Cliente {
   id?: number;
@@ -182,7 +183,7 @@ const FormularioCadastro: React.FC = () => {
     fetchClientes();
   }, []);
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <Carregamento loading={true} />;
   if (error) return <p>{error}</p>;
 
   return (

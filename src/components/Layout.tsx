@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   CssBaseline,
@@ -26,7 +26,6 @@ const drawerWidth = 240;
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [open, setOpen] = useState(false); // Estado para controlar a visibilidade do Drawer
   const navigate = useNavigate();
-
   const handleLogout = () => {
     localStorage.removeItem("jwtToken");
     navigate("/login");
@@ -37,16 +36,21 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   };
 
   return (
-    <Box sx={{ display: "flex" }}>
+    <Box sx={{ display: "flex", marginLeft: '40px' }}>
       <CssBaseline />
       <IconButton
-        onClick={handleToggleDrawer}
-        sx={{ margin: 2, zIndex: 1, marginTop: -100 }}
-      >
+        onClick={handleToggleDrawer} 
+        sx={{
+          position: "fixed",
+          top: 40,
+          left: "3%",
+          transform: "translateX(-50%)",
+        }}       
+    >
         <FontAwesomeIcon icon={faBars} style={{ color: "#2c3e50" }} />
       </IconButton>
       <Drawer
-        variant="temporary" // Mudando para "temporário"
+        variant="temporary"
         open={open}
         onClose={handleToggleDrawer}
         sx={{
@@ -55,8 +59,8 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           "& .MuiDrawer-paper": {
             width: drawerWidth,
             boxSizing: "border-box",
-            backgroundColor: "#2c3e50", // Cor de fundo da sidebar
-            color: "#ecf0f1", // Cor do texto
+            backgroundColor: "#2c3e50",
+            color: "#ecf0f1",
           },
         }}
         anchor="left"

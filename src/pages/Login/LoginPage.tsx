@@ -70,6 +70,7 @@ const LoginPage: React.FC = () => {
               <p key={index} className="error-message">{msg}</p>
             ))}
           </div>
+          <button type="submit" className="botao-login">Cadastrar</button>
           <button type="submit" className="botao-login">Login</button>
           {generalError && <p className="error-message">{generalError}</p>}
         </form>

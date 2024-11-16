@@ -4,7 +4,7 @@ import { Table } from 'react-bootstrap';
 interface Pagamento {
     id: number;
     valorPago: number;
-    dataPagamento: string; // ISO string para data
+    dataPagamento: string;
 }
 
 interface PagamentoTableProps {

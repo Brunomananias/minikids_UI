@@ -39,6 +39,7 @@ import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import apiClient from "../../services/apiClient";
 import { JSX } from "react/jsx-runtime";
+import Carregamento from "../../components/Carregamento/Carregamento";
 
 interface FormData {
   id: number;
@@ -104,7 +105,7 @@ const EventFormWithTable: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = React.useState<Date | null>(null);
   const [dataEvento, setDataEvento] = useState("");
-  // Função para lidar com mudanças no formulário
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -179,7 +180,7 @@ const EventFormWithTable: React.FC = () => {
           });
         });
 
-      setIsEditing(false); // Desativar o modo de edição
+      setIsEditing(false);
     } else {
       cadastrarEvento();
     }
@@ -384,7 +385,7 @@ const EventFormWithTable: React.FC = () => {
     clienteSobrenome: event.cliente ? event.cliente.sobrenome : "N/A",
   }));
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <Carregamento loading={true} />;
   if (error) return <p>{error}</p>;
 
   return (

@@ -1,0 +1,22 @@
+.loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* Faz o container ocupar toda a altura da tela */
+    background-color: rgba(255, 255, 255, 0.8); /* Opcional: fundo translúcido */
+}
+
+.loading-icon {
+    font-size: 3rem; /* Aumenta o tamanho do ícone */
+    color: #007bff; /* Cor azul (ou a cor que você preferir) */
+    animation: spin 1s linear infinite; /* Adiciona animação de rotação */
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
