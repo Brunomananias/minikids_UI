@@ -23,6 +23,7 @@ import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import apiClient from "../../services/apiClient";
 import { AppBar, Toolbar } from "@mui/material";
 import Carregamento from "../../components/Carregamento/Carregamento";
+import { getIdUsuario } from '../../services/apiClient';
 
 interface Cliente {
   id?: number;
@@ -49,7 +50,7 @@ const FormularioCadastro: React.FC = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [selectedCliente, setSelectedCliente] = useState<Cliente | null>(null);
-
+  const [idUsuario, setIdUsuario] = useState(0);
   const handleChangePage = (
     event: React.MouseEvent<HTMLButtonElement> | null,
     newPage: number
@@ -87,7 +88,12 @@ const FormularioCadastro: React.FC = () => {
 
   const cadastrarCliente = async () => {
     try {
-      const response = await apiClient.post("/api/clientes", formValues);
+      const payload = {
+        ...formValues,
+        idUsuario,
+      };
+
+      const response = await apiClient.post("/api/clientes", payload);
       const clienteCriado = response.data;
 
       setClientes([...clientes, clienteCriado]);
@@ -98,7 +104,7 @@ const FormularioCadastro: React.FC = () => {
         showConfirmButton: false,
         timer: 1500,
       });
-      handleAddNew(); // Limpar formulário após cadastro
+      handleAddNew();
     } catch (error) {
       console.error("Erro ao cadastrar cliente:", error);
     }
@@ -120,7 +126,7 @@ const FormularioCadastro: React.FC = () => {
         showConfirmButton: false,
         timer: 1500,
       });
-      handleAddNew(); // Limpar formulário após atualização
+      handleAddNew();
     } catch (error) {
       console.error("Erro ao atualizar cliente:", error);
     }
@@ -182,6 +188,11 @@ const FormularioCadastro: React.FC = () => {
 
     fetchClientes();
   }, []);
+
+  useEffect(() => {
+    const idUsuario = getIdUsuario();
+    setIdUsuario(idUsuario);
+  }, []); 
 
   if (loading) return <Carregamento loading={true} />;
   if (error) return <p>{error}</p>;

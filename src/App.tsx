@@ -10,7 +10,6 @@ import ContratosPage from './pages/Contratos/ContratosPage';
 import CalendarioPage from './pages/Calendario/CalendarioPage';
 import LoginPage from './pages/Login/LoginPage';
 import CaixaPage from './pages/Caixa/CaixaPage';
-
 function App() {
   const isAuthenticated = !!localStorage.getItem('jwtToken');
   return (

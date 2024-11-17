@@ -7,7 +7,7 @@ import apiClient from '../../services/apiClient';
 import Swal from 'sweetalert2';
 import CadastroUsuarioModal from "../../components/CadastroUsuarioModal/CadastroUsuarioModal";
 import Button from "../../components/Button/Button"
-
+import { getIdUsuario } from '../../services/apiClient';
 const LoginPage: React.FC = () => {
     const navigate = useNavigate();
   const [username, setUsername] = useState<string>('');
@@ -28,7 +28,11 @@ const LoginPage: React.FC = () => {
       if (response.status === 200) {
         const token: string = response.data.token;
         localStorage.setItem('jwtToken', token);
-        navigate('/clientes');
+        if(getIdUsuario() === "1"){
+          navigate('/clientes')
+        }else{
+          navigate('/calendario')
+        }      
         window.location.reload();
       }
     } catch (error) {

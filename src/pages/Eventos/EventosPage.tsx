@@ -35,9 +35,9 @@ import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import ClientModal from "../../components/clienteModal";
 import TimePicker from "../../components/TimePicker";
 import moment from "moment";
-import { faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faEdit, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import apiClient from "../../services/apiClient";
+import apiClient, { getIdUsuario } from "../../services/apiClient";
 import { JSX } from "react/jsx-runtime";
 import Carregamento from "../../components/Carregamento/Carregamento";
 
@@ -49,8 +49,10 @@ interface FormData {
   tempoDeFesta: string;
   endereco: string;
   clienteId: number;
-  valorTotalPacote: number;
-  observacoes: string;
+  valorTotalPacote?: number;
+  observacoes?: string;
+  nomeAniversariante?: string;
+  temaAniversario?: string; 
 }
 
 interface Cliente {
@@ -68,9 +70,11 @@ interface Evento {
   endereco: string;
   clienteId: number;
   observacoes?: string;
-  valorTotalPacote: number;
+  valorTotalPacote?: number;
   formattedDate?: string;
   cliente?: Cliente;
+  nomeAniversariante?: string;
+  temaAniversario?: string; 
 }
 
 interface EventoComCliente extends Evento {
@@ -88,6 +92,8 @@ const EventFormWithTable: React.FC = () => {
     clienteId: 0,
     valorTotalPacote: 0,
     observacoes: "",
+    nomeAniversariante: "",
+    temaAniversario: ""
   });
   const [selectedRowId, setSelectedRowId] = useState<number | null>(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -105,6 +111,24 @@ const EventFormWithTable: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = React.useState<Date | null>(null);
   const [dataEvento, setDataEvento] = useState("");
+
+  const limparFormulario = () => {
+    setSelectedRowId(null);
+    setSelectedClient(null);
+    setFormData({
+      id: 0,
+      data: "",
+      pacote: "",
+      horarioFesta: "",
+      tempoDeFesta: "",
+      endereco: "",
+      clienteId: 0,
+      valorTotalPacote: 0,
+      observacoes: "",
+      nomeAniversariante: "",
+      temaAniversario: ""
+  });
+  };
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -230,14 +254,13 @@ const EventFormWithTable: React.FC = () => {
 
   const cadastrarEvento = async () => {
     try {
-      console.log("teste");
       const formattedDate = formatDateForApi(selectedDate);
       const formattedTime = selectedTime
         ? `1970-01-01T${selectedTime}:00`
         : null;
-      const response = await apiClient.post(
-        "api/Eventos",
-        {
+
+      const payload = {
+          idUsuario: getIdUsuario(),
           data: formattedDate,
           pacote: formData.pacote,
           horarioFesta: formattedTime,
@@ -246,15 +269,13 @@ const EventFormWithTable: React.FC = () => {
           observacoes: formData.observacoes,
           clienteId: formData.clienteId,
           valorTotalPacote: formData.valorTotalPacote,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      console.log(response.data);
+          nomeAniversariante: formData.nomeAniversariante,
+          temaAniversario: formData.temaAniversario
+      }  
+
+      const response = await apiClient.post("api/Eventos", payload);
       setEvents([...events, response.data]);
+      setSelectedClient(null);
       fetchEventos();
       Swal.fire({
         position: "center",
@@ -292,9 +313,7 @@ const EventFormWithTable: React.FC = () => {
 
   const handleDelete = async (id: number) => {
     try {
-      console.log("Deleting client with ID:", id);
       const response = await apiClient.delete(`/api/eventos/${id}`);
-      console.log("Response from server:", response);
       setEvents(events.filter((evento) => evento.id !== id));
       Swal.fire({
         position: "center",
@@ -348,7 +367,6 @@ const EventFormWithTable: React.FC = () => {
           formattedDate,
         };
       });
-
       // Mapear clientes por ID para acesso rápido
       const clientMap = new Map<number, Cliente>(
         clientResponse.data.map((client) => [client.id, client])
@@ -358,7 +376,7 @@ const EventFormWithTable: React.FC = () => {
       const eventsWithClients: EventoComCliente[] = formattedEvents.map(
         (event) => ({
           ...event,
-          cliente: clientMap.get(event.clienteId) || undefined, // Usar undefined para garantir que seja compatível com Cliente | undefined
+          cliente: clientMap.get(event.clienteId) || undefined,
         })
       );
 
@@ -373,17 +391,6 @@ const EventFormWithTable: React.FC = () => {
   useEffect(() => {
     fetchEventos();
   }, []);
-
-  const formattedEvents = events.map((event) => ({
-    data: event.data,
-    pacote: event.pacote,
-    horarioFesta: event.horarioFesta,
-    tempoDeFesta: event.tempoDeFesta,
-    endereco: event.endereco,
-    observacoes: event.observacoes,
-    clienteNome: event.cliente ? event.cliente.nome : "N/A",
-    clienteSobrenome: event.cliente ? event.cliente.sobrenome : "N/A",
-  }));
 
   if (loading) return <Carregamento loading={true} />;
   if (error) return <p>{error}</p>;
@@ -402,62 +409,25 @@ const EventFormWithTable: React.FC = () => {
       <div style={{ flex: 1, marginRight: "20px" }}>
         <form onSubmit={handleSubmit}>
           <Grid container spacing={2}>
-            {/* Linha com Data, Horário, Pacote e Valor */}
-            <Grid container item xs={12} spacing={2} alignItems="flex-end">
-              <Grid item xs={3}>
+            <Grid container item xs={10} spacing={2} alignItems="flex-end">
+              <Grid item xs={2}>
                 <LocalizationProvider dateAdapter={AdapterDateFns}>
                   <DatePicker
-                    label="Data do Evento"
+                    label="Data"
                     value={selectedDate}
                     onChange={(newValue) => setSelectedDate(newValue)}
                   />
                 </LocalizationProvider>
               </Grid>
-              <Grid item xs={3}>
+              <Grid item xs={4}>
                 <TimePicker
                   onChange={handleTimeChange}
                 />
               </Grid>
-              <Grid item xs={3}>
-                <Select
-                  labelId="pacote-label"
-                  name="pacote"
-                  value={formData.pacote}
-                  onChange={handleSelectChange}
-                  label="Pacote Escolhido"
-                  fullWidth
-                >
-                  <MenuItem value="">
-                    <em>Selecione um pacote</em>
-                  </MenuItem>
-                  <MenuItem value="nuvem">Nuvem</MenuItem>
-                  <MenuItem value="sol">Sol</MenuItem>
-                  <MenuItem value="lua">Lua</MenuItem>
-                  <MenuItem value="cometa">Cometa</MenuItem>
-                  <MenuItem value="estrela">Estrela</MenuItem>
-                  <MenuItem value="arco-iris">Arco-Íris</MenuItem>
-                  <MenuItem value="planetario">Planetário</MenuItem>
-                </Select>
-              </Grid>
-              <Grid item xs={3}>
+              <Grid item xs={2}>
                 <TextField
                   fullWidth
-                  label="Valor do Pacote"
-                  name="valorTotalPacote"
-                  variant="outlined"
-                  value={formData.valorTotalPacote}
-                  onChange={handleChange}
-                  required
-                />
-              </Grid>
-            </Grid>
-
-            {/* Linha com Tempo de Festa, Endereço e Observações */}
-            <Grid container item xs={12} spacing={2}>
-              <Grid item xs={4}>
-                <TextField
-                  fullWidth
-                  label="Tempo de Festa (Horas)"
+                  label="Tempo"
                   name="tempoDeFesta"
                   variant="outlined"
                   value={formData.tempoDeFesta}
@@ -465,6 +435,37 @@ const EventFormWithTable: React.FC = () => {
                   required
                 />
               </Grid>
+              <Grid item xs={2}>
+              <InputLabel id="pacote-label">Pacote Escolhido</InputLabel>
+                <Select
+                  labelId="pacote-label"
+                  name="pacote"
+                  value={formData.pacote}
+                  onChange={handleSelectChange}
+                  label="Pacote Escolhido"
+                  placeholder="Selecione um pacote"
+                  fullWidth
+                >                  
+                  <MenuItem value="Nuvem">Nuvem</MenuItem>
+                  <MenuItem value="Sol">Sol</MenuItem>
+                  <MenuItem value="Lua">Lua</MenuItem>
+                  <MenuItem value="Cometa">Cometa</MenuItem>
+                  <MenuItem value="Estrela">Estrela</MenuItem>
+                  <MenuItem value="Arco-Íris">Arco-Íris</MenuItem>
+                  <MenuItem value="Planetário">Planetário</MenuItem>
+                </Select>
+              </Grid>
+              <Grid item xs={2}>
+                <TextField
+                  fullWidth
+                  label="Valor"
+                  name="valorTotalPacote"
+                  variant="outlined"
+                  value={formData.valorTotalPacote}
+                  onChange={handleChange}
+                  required
+                />
+              </Grid>              
               <Grid item xs={4}>
                 <TextField
                   fullWidth
@@ -486,9 +487,28 @@ const EventFormWithTable: React.FC = () => {
                   onChange={handleChange}
                 />
               </Grid>
+              <Grid item xs={2}>
+                <TextField
+                  fullWidth
+                  label="Aniversariante"
+                  name="nomeAniversariante"
+                  variant="outlined"
+                  value={formData.nomeAniversariante}
+                  onChange={handleChange}
+                />
+              </Grid>
+              <Grid item xs={2}>
+                <TextField
+                  fullWidth
+                  label="Tema"
+                  name="temaAniversario"
+                  variant="outlined"
+                  value={formData.temaAniversario}
+                  onChange={handleChange}
+                />
+              </Grid>
             </Grid>
 
-            {/* Botão de Buscar Clientes */}
             <Grid item xs={7} sm={10} style={{ marginTop: '-10px' }}>
               <Button variant="text" onClick={carregarClientes}>
                 Buscar Clientes
@@ -501,7 +521,6 @@ const EventFormWithTable: React.FC = () => {
               />
             </Grid>
 
-            {/* Código e Nome do Cliente */}
             <Grid container item xs={12} spacing={2} style={{ marginTop: '-20px' }}>
               <Grid item xs={6} sm={2}>
                 <TextField
@@ -528,13 +547,13 @@ const EventFormWithTable: React.FC = () => {
             {/* Botão de Submit */}
             <Grid item xs={12} style={{ marginTop: '20px' }}>
               <Button type="submit" variant="contained" color="primary">
-                {isEditing ? "Atualizar" : "Cadastrar"}
+                {selectedRowId ? "Atualizar" : "Cadastrar"}
               </Button>
-              {isEditing && (
+              {selectedRowId && (
                 <Button
                   variant="contained"
                   color="secondary"
-                  onClick={cadastrarEvento}
+                  onClick={limparFormulario}
                   style={{ marginLeft: "10px" }}
                 >
                   Cadastrar Evento
@@ -551,14 +570,14 @@ const EventFormWithTable: React.FC = () => {
           <Table>
             <TableHead>
               <TableRow>
+              <TableCell>Cliente</TableCell>
                 <TableCell>Data</TableCell>
                 <TableCell>Pacote</TableCell>
                 <TableCell>Horario</TableCell>
                 <TableCell>Duração</TableCell>
                 <TableCell>Endereço</TableCell>
                 <TableCell>Observações</TableCell>
-                <TableCell>Cliente Nome</TableCell>
-                <TableCell>Cliente Sobrenome</TableCell>
+                <TableCell></TableCell>
                 <TableCell></TableCell>
               </TableRow>
             </TableHead>
@@ -566,12 +585,14 @@ const EventFormWithTable: React.FC = () => {
               {paginatedEventos.map((event) => (
                 <TableRow
                   key={event.id}
-                  onClick={() => handleRowClick(event)}
                   style={{
                     backgroundColor:
                       selectedRowId === event.id ? "#f0f0f0" : "transparent",
                   }}
                 >
+                    <TableCell>
+                    {event.cliente ? event.cliente.nome : "N/A"}
+                  </TableCell>
                   <TableCell>
                     {new Date(event.data).toLocaleDateString("pt-BR")}
                   </TableCell>
@@ -583,10 +604,12 @@ const EventFormWithTable: React.FC = () => {
                   <TableCell>{event.endereco}</TableCell>
                   <TableCell>{event.observacoes || "N/A"}</TableCell>
                   <TableCell>
-                    {event.cliente ? event.cliente.nome : "N/A"}
-                  </TableCell>
-                  <TableCell>
-                    {event.cliente ? event.cliente.sobrenome : "N/A"}
+                    <IconButton
+                      color="secondary"
+                      onClick={() => handleRowClick(event)}
+                    >
+                     <FontAwesomeIcon icon={faEdit} />
+                    </IconButton>
                   </TableCell>
                   <TableCell>
                     <IconButton

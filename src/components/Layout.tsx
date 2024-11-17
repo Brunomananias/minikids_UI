@@ -20,7 +20,7 @@ import {
   faBars,
 } from "@fortawesome/free-solid-svg-icons";
 import { ChevronLeft } from "@mui/icons-material";
-
+import { getIdUsuario } from '../services/apiClient';
 const drawerWidth = 240;
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -29,6 +29,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
   const handleLogout = () => {
     localStorage.removeItem("jwtToken");
+    handleToggleDrawer();
     navigate("/login");
   };
 
@@ -37,6 +38,19 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   };
 
   const isLoginPage = location.pathname === "/login";
+
+  const menuItems = [
+    { text: "Clientes", icon: faUsers, path: "/clientes" },
+    { text: "Eventos", icon: faCalendar, path: "/eventos" },
+    { text: "Financeiro", icon: faDollarSign, path: "/financeiro" },
+    { text: "Caixa", icon: faDollarSign, path: "/caixa" },
+    { text: "Calendário", icon: faCalendar, path: "/calendario" },
+    { text: "Contratos", icon: faFileContract, path: "/contratos" },
+  ];
+
+  const menuItemsCalendario = [
+    { text: "Calendário", icon: faCalendar, path: "/calendario" },
+  ];
 
   return (
     <Box sx={{ display: "flex", marginLeft: '40px' }}>
@@ -86,30 +100,40 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         </Box>
         <Divider sx={{ backgroundColor: "#34495e" }} />
         <List>
-          {[
-            { text: "Clientes", icon: faUsers, path: "/clientes" },
-            { text: "Eventos", icon: faCalendar, path: "/eventos" },
-            { text: "Financeiro", icon: faDollarSign, path: "/financeiro" },
-            { text: "Caixa", icon: faDollarSign, path: "/caixa" },
-            { text: "Calendário", icon: faCalendar, path: "/calendario" },
-            { text: "Contratos", icon: faFileContract, path: "/contratos" },
-          ].map((item) => (
-            <ListItem
-              button
-              component={Link}
-              to={item.path}
-              key={item.text}
-              sx={{ "&:hover": { backgroundColor: "#34495e" } }}
-              onClick={() => setOpen(false)}
-            >
-              <FontAwesomeIcon icon={item.icon} />
-              <ListItemText
-                primary={item.text}
-                sx={{ marginLeft: 2, color: "#ecf0f1" }}
-              />
-            </ListItem>
-          ))}
-        </List>
+            {getIdUsuario() === "1"
+              ? menuItems.map((item) => (
+                  <ListItem
+                    button
+                    component={Link}
+                    to={item.path}
+                    key={item.text}
+                    sx={{ "&:hover": { backgroundColor: "#34495e" } }}
+                    onClick={() => setOpen(false)}
+                  >
+                    <FontAwesomeIcon icon={item.icon} />
+                    <ListItemText
+                      primary={item.text}
+                      sx={{ marginLeft: 2, color: "#ecf0f1" }}
+                    />
+                  </ListItem>
+                ))
+              : menuItemsCalendario.map((item) => (
+                  <ListItem
+                    button
+                    component={Link}
+                    to={item.path}
+                    key={item.text}
+                    sx={{ "&:hover": { backgroundColor: "#34495e" } }}
+                    onClick={() => setOpen(false)}
+                  >
+                    <FontAwesomeIcon icon={item.icon} />
+                    <ListItemText
+                      primary={item.text}
+                      sx={{ marginLeft: 2, color: "#ecf0f1" }}
+                    />
+                  </ListItem>
+                ))}
+          </List>
         <Divider sx={{ backgroundColor: "#34495e" }} />
         <List>
           <ListItem

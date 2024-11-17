@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { jwtDecode } from 'jwt-decode';
 
 // Função para pegar o token do localStorage
 const getToken = () => {
@@ -26,5 +27,19 @@ apiClient.interceptors.request.use(
     return Promise.reject(error);
   }
 );
+
+export const getIdUsuario = () => {
+  const token = localStorage.getItem('jwtToken');
+  if (token) {
+    try {
+      const decoded: any = jwtDecode(token);
+      return decoded.usuarioId || decoded.sub || null;
+    } catch (error) {
+      console.error('Erro ao decodificar o token:', error);
+      return null;
+    }
+  }
+  return null;
+};
 
 export default apiClient;
