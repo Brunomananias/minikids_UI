@@ -1,10 +1,12 @@
 // src/components/LoginPage.tsx
 import React, { useState, FormEvent } from 'react';
 import axios from 'axios';
-import './LoginPage.css'; // Importa o CSS para a estilização
+import './LoginPage.css';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../../services/apiClient';
 import Swal from 'sweetalert2';
+import CadastroUsuarioModal from "../../components/CadastroUsuarioModal/CadastroUsuarioModal";
+import Button from "../../components/Button/Button"
 
 const LoginPage: React.FC = () => {
     const navigate = useNavigate();
@@ -12,6 +14,7 @@ const LoginPage: React.FC = () => {
   const [password, setPassword] = useState<string>('');
   const [errors, setErrors] = useState<{ username?: string[]; password?: string[] }>({});
   const [generalError, setGeneralError] = useState<string>('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleLogin = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -70,9 +73,26 @@ const LoginPage: React.FC = () => {
               <p key={index} className="error-message">{msg}</p>
             ))}
           </div>
-          <button type="submit" className="botao-login">Cadastrar</button>
-          <button type="submit" className="botao-login">Login</button>
+            <Button
+              texto="Cadastrar"
+              color="success"  
+              onClick={() => setIsModalOpen(true)}           
+            />
+            <Button 
+            texto="Login" 
+            color="primary" 
+            type="submit" 
+            style={{
+              display: 'flex',
+              marginLeft: 'auto',
+              marginTop: -37
+            }}
+            />
           {generalError && <p className="error-message">{generalError}</p>}
+          <CadastroUsuarioModal
+            open={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+          />
         </form>
       </div>
     </div>

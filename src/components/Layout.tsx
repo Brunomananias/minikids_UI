@@ -10,7 +10,7 @@ import {
   Typography,
   IconButton,
 } from "@mui/material";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation  } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faUsers,
@@ -18,37 +18,42 @@ import {
   faDollarSign,
   faFileContract,
   faBars,
-} from "@fortawesome/free-solid-svg-icons"; // Importando ícone de menu
+} from "@fortawesome/free-solid-svg-icons";
 import { ChevronLeft } from "@mui/icons-material";
 
 const drawerWidth = 240;
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [open, setOpen] = useState(false); // Estado para controlar a visibilidade do Drawer
+  const [open, setOpen] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const handleLogout = () => {
     localStorage.removeItem("jwtToken");
     navigate("/login");
   };
 
   const handleToggleDrawer = () => {
-    setOpen(!open); // Alterna o estado do Drawer
+    setOpen(!open);
   };
+
+  const isLoginPage = location.pathname === "/login";
 
   return (
     <Box sx={{ display: "flex", marginLeft: '40px' }}>
       <CssBaseline />
-      <IconButton
-        onClick={handleToggleDrawer} 
-        sx={{
-          position: "fixed",
-          top: 40,
-          left: "3%",
-          transform: "translateX(-50%)",
-        }}       
-    >
-        <FontAwesomeIcon icon={faBars} style={{ color: "#2c3e50" }} />
-      </IconButton>
+      {!isLoginPage && (
+        <IconButton
+          onClick={handleToggleDrawer} 
+          sx={{
+            position: "fixed",
+            top: 40,
+            left: "3%",
+            transform: "translateX(-50%)",
+          }}       
+        >
+          <FontAwesomeIcon icon={faBars} style={{ color: "#2c3e50" }} />
+        </IconButton>
+      )}
       <Drawer
         variant="temporary"
         open={open}

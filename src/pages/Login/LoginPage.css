@@ -33,11 +33,11 @@ input {
 }
 
 .botao-login {
-  background-color: #4CAF50; /* Cor de fundo verde */
-  border: none; /* Sem borda */
-  color: white; /* Cor do texto */
-  padding: 15px 32px; /* Espaçamento interno */
-  text-align: center; /* Alinhamento do texto */
+  background-color: #4CAF50;
+  border: none;
+  color: white;
+  padding: 15px 32px;
+  text-align: center;
   text-decoration: none; /* Sem sublinhado */
   display: inline-block; /* Para aplicar margens */
   font-size: 16px; /* Tamanho da fonte */
@@ -45,6 +45,7 @@ input {
   cursor: pointer; /* Cursor de mão ao passar o mouse */
   border-radius: 12px; /* Bordas arredondadas */
   transition: background-color 0.3s; /* Transição suave */
+  height: 10px;
 }
 
 .botao-login:hover {
