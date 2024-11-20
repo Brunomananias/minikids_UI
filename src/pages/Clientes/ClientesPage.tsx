@@ -19,7 +19,7 @@ import {
 import axios from "axios";
 import Swal from "sweetalert2";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faTrash, faEdit } from "@fortawesome/free-solid-svg-icons";
 import apiClient from "../../services/apiClient";
 import { AppBar, Toolbar } from "@mui/material";
 import Carregamento from "../../components/Carregamento/Carregamento";
@@ -134,17 +134,24 @@ const FormularioCadastro: React.FC = () => {
 
   const handleDelete = async (id: number) => {
     try {
-      console.log("Deleting client with ID:", id);
-      const response = await apiClient.delete(`/api/clientes/${id}`);
-      console.log("Response from server:", response);
-      setClientes(clientes.filter((cliente) => cliente.id !== id));
-      Swal.fire({
-        position: "center",
-        icon: "success",
-        title: "Cliente excluído com sucesso!",
-        showConfirmButton: false,
-        timer: 1500,
+      const result = await Swal.fire({
+        title: "Você tem certeza?",
+        text: "Você não terá como reverter isso!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Sim, deletar !",
       });
+        if (result.isConfirmed) {
+          await apiClient.delete(`/api/clientes/${id}`);
+          setClientes(clientes.filter((cliente) => cliente.id !== id));
+          Swal.fire({
+            title: "Deletado com sucesso!",
+            text: "Os dados foram deletados.",
+            icon: "success",
+          });
+        }
     } catch (error) {
       console.error("Erro ao excluir cliente:", error);
       Swal.fire({
@@ -220,11 +227,16 @@ const FormularioCadastro: React.FC = () => {
         </AppBar>
         <Grid
           container
-          spacing={2}
+          spacing={4}
           item
           xs={5}
           sm={10}
           direction={{ xs: "column", sm: "row" }}
+          style={{ backgroundColor: "#FFFFFF", 
+            marginTop: 20, 
+            paddingRight: 30, 
+            paddingBottom: 30,
+            marginLeft: 40 }}
         >
           <Grid item xs={5} sm={6}>
             <TextField
@@ -257,7 +269,6 @@ const FormularioCadastro: React.FC = () => {
               type="email"
               value={formValues.email}
               onChange={handleChange}
-              required
             />
           </Grid>
           <Grid item xs={5} sm={6}>
@@ -269,7 +280,6 @@ const FormularioCadastro: React.FC = () => {
               type="tel"
               value={formValues.celular}
               onChange={handleChange}
-              required
             />
           </Grid>
           <Grid item xs={5}>
@@ -285,22 +295,29 @@ const FormularioCadastro: React.FC = () => {
               required
             />
           </Grid>
-        </Grid>
-        <Grid item xs={2} style={{ marginTop: 10 }}>
-          <Button type="submit" variant="contained" color="primary">
+          <Grid item xs={2}
+          style={{ 
+            marginTop: 10, 
+            display: 'flex', 
+            flexDirection: 'column', 
+            alignItems: 'flex-end', 
+            justifyContent: 'flex-end' 
+          }}
+          >
+          <Button type="submit" variant="contained" color="primary" style={{ marginBottom: '10px' }} >
             {selectedCliente ? "Atualizar" : "Cadastrar"}
           </Button>
 
           {selectedCliente && (
             <Button
               variant="contained"
-              color="secondary"
+              color="success"
               onClick={handleAddNew}
-              style={{ marginTop: "10px" }}
             >
               Cadastrar Novo
             </Button>
           )}
+        </Grid>
         </Grid>
       </Box>
       <Box sx={{ marginTop: 4 }}>
@@ -320,13 +337,13 @@ const FormularioCadastro: React.FC = () => {
                 <TableCell>Celular</TableCell>
                 <TableCell>Endereço</TableCell>
                 <TableCell></TableCell>
+                <TableCell></TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {paginatedClientes.map((cliente) => (
                 <TableRow
                   key={cliente.id}
-                  onClick={() => handleRowClick(cliente)}
                   style={{ cursor: "pointer" }}
                 >
                   <TableCell>{cliente.nome}</TableCell>
@@ -334,6 +351,14 @@ const FormularioCadastro: React.FC = () => {
                   <TableCell>{cliente.email}</TableCell>
                   <TableCell>{cliente.celular}</TableCell>
                   <TableCell>{cliente.endereco}</TableCell>
+                  <TableCell>
+                    <IconButton
+                      color="secondary"
+                      onClick={() => handleRowClick(cliente)}
+                    >
+                     <FontAwesomeIcon icon={faEdit} />
+                    </IconButton>
+                  </TableCell>
                   <TableCell>
                     <IconButton
                       color="secondary"

@@ -13,6 +13,7 @@ import CaixaPage from './pages/Caixa/CaixaPage';
 function App() {
   const isAuthenticated = !!localStorage.getItem('jwtToken');
   return (
+    <div style={{ backgroundColor: '#f0f0f0', minHeight: '100vh'}}>
     <Router>
       <Layout>
         <Routes>
@@ -27,6 +28,7 @@ function App() {
         </Routes>
       </Layout>
     </Router>
+    </div>
   );
 }
 

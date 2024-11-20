@@ -40,7 +40,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import apiClient, { getIdUsuario } from "../../services/apiClient";
 import { JSX } from "react/jsx-runtime";
 import Carregamento from "../../components/Carregamento/Carregamento";
-
+import './EventosPage.css';
 interface FormData {
   id: number;
   data: string;
@@ -408,7 +408,12 @@ const EventFormWithTable: React.FC = () => {
       <div style={{ display: "flex", flexDirection: "column", padding: "20px" }}>
       <div style={{ flex: 1, marginRight: "20px" }}>
         <form onSubmit={handleSubmit}>
-          <Grid container spacing={2}>
+          <Grid container spacing={2} 
+            style={{ backgroundColor: "#FFFFFF", 
+            marginTop: 20, 
+            paddingRight: 30, 
+            paddingBottom: 30 }}
+            >
             <Grid container item xs={10} spacing={2} alignItems="flex-end">
               <Grid item xs={2}>
                 <LocalizationProvider dateAdapter={AdapterDateFns}>
@@ -545,7 +550,15 @@ const EventFormWithTable: React.FC = () => {
             </Grid>
 
             {/* Botão de Submit */}
-            <Grid item xs={12} style={{ marginTop: '20px' }}>
+            <Grid 
+            item xs={12}
+            style={{ 
+              marginTop: '20px', 
+              display: 'flex', 
+              justifyContent: 'flex-end', 
+              alignItems: 'center' 
+            }}
+            >
               <Button type="submit" variant="contained" color="primary">
                 {selectedRowId ? "Atualizar" : "Cadastrar"}
               </Button>
@@ -565,8 +578,8 @@ const EventFormWithTable: React.FC = () => {
       </div>
     </div>
       <div style={{ flex: 1 }}>
-        <h3>Eventos Cadastrados</h3>
         <TableContainer component={Paper} style={{ marginTop: "20px" }}>
+        <h3 className='titulo-eventosCadastrados'>Eventos Cadastrados</h3>
           <Table>
             <TableHead>
               <TableRow>
