@@ -577,24 +577,24 @@ const EventFormWithTable: React.FC = () => {
         </form>
       </div>
     </div>
-      <div style={{ flex: 1 }}>
-        <TableContainer component={Paper} style={{ marginTop: "20px" }}>
+      <div  className="table-container" style={{ flex: 1 }}>
+        <TableContainer component={Paper} className="table-container" style={{ marginTop: "20px" }}>
         <h3 className='titulo-eventosCadastrados'>Eventos Cadastrados</h3>
           <Table>
             <TableHead>
               <TableRow>
-              <TableCell>Cliente</TableCell>
-                <TableCell>Data</TableCell>
-                <TableCell>Pacote</TableCell>
-                <TableCell>Horario</TableCell>
-                <TableCell>Duração</TableCell>
-                <TableCell>Endereço</TableCell>
-                <TableCell>Observações</TableCell>
+              <TableCell className="table-cell">Cliente</TableCell>
+                <TableCell className="table-cell">Data</TableCell>
+                <TableCell className="table-cell">Pacote</TableCell>
+                <TableCell className="table-cell">Horario</TableCell>
+                <TableCell className="table-cell">Duração</TableCell>
+                <TableCell className="table-cell">Endereço</TableCell>
+                <TableCell className="table-cell">Observações</TableCell>
                 <TableCell></TableCell>
                 <TableCell></TableCell>
               </TableRow>
             </TableHead>
-            <TableBody>
+            <TableBody className="table-cell">
               {paginatedEventos.map((event) => (
                 <TableRow
                   key={event.id}
@@ -603,19 +603,19 @@ const EventFormWithTable: React.FC = () => {
                       selectedRowId === event.id ? "#f0f0f0" : "transparent",
                   }}
                 >
-                    <TableCell>
+                    <TableCell className="table-cell">
                     {event.cliente ? event.cliente.nome : "N/A"}
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="table-cell">
                     {new Date(event.data).toLocaleDateString("pt-BR")}
-                  </TableCell>
-                  <TableCell>{event.pacote}</TableCell>
-                  <TableCell>
+                  </TableCell> 
+                  <TableCell className="table-cell">{event.pacote}</TableCell>
+                  <TableCell className="table-cell">
                     {moment(event.horarioFesta).format("LT")}
                   </TableCell>
-                  <TableCell>{event.tempoDeFesta}</TableCell>
-                  <TableCell>{event.endereco}</TableCell>
-                  <TableCell>{event.observacoes || "N/A"}</TableCell>
+                  <TableCell className="table-cell">{event.tempoDeFesta}</TableCell>
+                  <TableCell className="table-cell">{event.endereco}</TableCell>
+                  <TableCell className="table-cell">{event.observacoes || "N/A"}</TableCell>
                   <TableCell>
                     <IconButton
                       color="secondary"

@@ -1,0 +1,6 @@
+@media (max-width: 775px) {
+    .container-cadastro {
+        width: 150px;
+        background-color: red;
+    }
+  }

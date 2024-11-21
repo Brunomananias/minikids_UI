@@ -100,7 +100,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         </Box>
         <Divider sx={{ backgroundColor: "#34495e" }} />
         <List>
-            {getIdUsuario() === "1"
+            {getIdUsuario() !== null
               ? menuItems.map((item) => (
                   <ListItem
                     button

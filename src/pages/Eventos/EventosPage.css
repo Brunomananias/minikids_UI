@@ -2,3 +2,12 @@
     margin-left: 30px;
     margin-top: 20px;
 }
+
+@media (max-width: 775px) {
+    .table-container {
+        width: 650px;
+    }
+    .titulo-eventosCadastrados {
+      font-size: 26px; 
+    }
+  }

@@ -24,6 +24,7 @@ import apiClient from "../../services/apiClient";
 import { AppBar, Toolbar } from "@mui/material";
 import Carregamento from "../../components/Carregamento/Carregamento";
 import { getIdUsuario } from '../../services/apiClient';
+import "./ClientesPage.css";
 
 interface Cliente {
   id?: number;
@@ -93,18 +94,29 @@ const FormularioCadastro: React.FC = () => {
         idUsuario,
       };
 
-      const response = await apiClient.post("/api/clientes", payload);
-      const clienteCriado = response.data;
+      if (!formValues.nome || !formValues.sobrenome || !formValues.endereco) {
+        Swal.fire({
+          position: "center",
+          icon: "error",
+          title: "É necessário preencher os campos obrigatórios!",
+          showConfirmButton: false,
+          timer: 1500,
+        });
+        return;
+      } else {
+        const response = await apiClient.post("/api/clientes", payload);
+        const clienteCriado = response.data;
 
-      setClientes([...clientes, clienteCriado]);
-      Swal.fire({
-        position: "center",
-        icon: "success",
-        title: "Cadastrado com sucesso!",
-        showConfirmButton: false,
-        timer: 1500,
-      });
-      handleAddNew();
+        setClientes([...clientes, clienteCriado]);
+        Swal.fire({
+          position: "center",
+          icon: "success",
+          title: "Cadastrado com sucesso!",
+          showConfirmButton: false,
+          timer: 1500,
+        });
+        handleAddNew();
+      }
     } catch (error) {
       console.error("Erro ao cadastrar cliente:", error);
     }
@@ -205,7 +217,7 @@ const FormularioCadastro: React.FC = () => {
   if (error) return <p>{error}</p>;
 
   return (
-    <Container maxWidth="lg">
+    <Container>
       <Box
         component="form"
         noValidate
@@ -229,14 +241,15 @@ const FormularioCadastro: React.FC = () => {
           container
           spacing={4}
           item
-          xs={5}
-          sm={10}
+          xs={6}
+          sm={11}
           direction={{ xs: "column", sm: "row" }}
           style={{ backgroundColor: "#FFFFFF", 
             marginTop: 20, 
             paddingRight: 30, 
             paddingBottom: 30,
-            marginLeft: 40 }}
+            marginLeft: 5,
+             }}
         >
           <Grid item xs={5} sm={6}>
             <TextField
@@ -326,7 +339,7 @@ const FormularioCadastro: React.FC = () => {
         </Typography>
         <TableContainer
           component={Paper}
-          sx={{ overflowX: "auto", maxWidth: { xs: "100%", sm: "auto" } }}
+          sx={{ overflowX: "auto", maxWidth: { xs: "97%", sm: "auto" } }}
         >
           <Table sx={{ minWidth: { xs: 350, sm: 650 } }}>
             <TableHead>
